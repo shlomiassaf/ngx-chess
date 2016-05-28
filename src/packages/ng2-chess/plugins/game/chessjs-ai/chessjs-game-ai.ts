@@ -69,7 +69,8 @@ export class ChessJSGameAI extends ChessJSGame {
     return super.init()
       .then( () => {
         if (!this.fishWrap) {
-          this.fishWrap = new FishWrap(true);
+          const debug = 'development' === ENV;
+          this.fishWrap = new FishWrap(debug);
         }
 
         return this.fishWrap.uci();
@@ -81,7 +82,8 @@ export class ChessJSGameAI extends ChessJSGame {
       .then( () => this.init() )
       .then( () => {
         this.fwHistory = [];
-        return this.fishWrap.ucinewgame()
+        return this.fishWrap.stop()
+          .then( _ => this.fishWrap.ucinewgame() )
           .then( _ => <any>this.fishWrap.position(POSITION_SET_TYPE.startpos) );
       });
   }
@@ -96,6 +98,17 @@ export class ChessJSGameAI extends ChessJSGame {
       this.fishWrap.position(POSITION_SET_TYPE.startpos, this.fwHistory.join(' '));
     }
 
+    return move;
+  }
+
+  undo(): ChessMove {
+    const move = super.undo();
+
+    if (!move.invalid && this.aiReady) {
+      this.fwHistory.pop();
+      this.fishWrap.position(POSITION_SET_TYPE.startpos, this.fwHistory.join(' '));
+    }
+    
     return move;
   }
 
@@ -116,5 +129,12 @@ export class ChessJSGameAI extends ChessJSGame {
       .then( goRes => util.move.factoryLongAlg(goRes.bestMove.move) );
   }
 
+  /**
+   * Stops AI processing and perform the last best move found.
+   * @returns {Promise<void>}
+   */
+  aiStop(): Promise<void> {
+    return this.fishWrap.stop();
+  }
 }
 

@@ -223,7 +223,7 @@ declare class Chess {
   /**
    * Takeback the last half-move, returning a move object if successful, otherwise null.
    */
-  undo(): Chess.ChessMove | void;
+  undo(): Chess.ChessMove;
 
   /**
    * Returns a validation object specifying validity or the errors found within the FEN string.

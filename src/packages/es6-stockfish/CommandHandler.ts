@@ -34,6 +34,7 @@ abstract class CommandRouter {
    * @returns {any}
    */
   protected route(msg: string): void {
+    if (this.__debug__) console.log(msg);
     const tokens = msg.split(' '),
           cmd = this.transformCommand(tokens.shift());
 

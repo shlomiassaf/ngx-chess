@@ -49,9 +49,11 @@ export abstract class ChessEngine {
   abstract turn(): PieceColor;
 
   abstract winner(): PieceColor;
+  
+  abstract undo(): ChessMove;
 
   /**
-   * Returns a list of leagal moves for a piece.
+   * Returns a the blocks a piece can move.
    */
   abstract moves(piece: Piece): Block[];
 
@@ -65,5 +67,13 @@ export abstract class ChessEngine {
 
   aiNextMove(query: AIQuery): Promise<ChessMove> {
     return Promise.reject<ChessMove>(new Error('Not implemented.'));
+  }
+
+  /**
+   * Stops AI processing and perform the last best move found.
+   * @returns {Promise<void>}
+   */
+  aiStop(): Promise<void> {
+    return Promise.resolve();
   }
 }

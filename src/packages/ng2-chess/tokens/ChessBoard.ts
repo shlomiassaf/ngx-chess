@@ -12,8 +12,9 @@ export abstract class ChessBoard {
   }
 
 
+  abstract highlight(blocks: Block[]);
   abstract newGame(): Promise<void>;
-  abstract move(piece: Piece, to: Block): void;
+  abstract move(piece: Piece): void;
   abstract askPromotionType(): Promise<PieceType>;
   abstract blockUi(value: boolean): void;
   abstract busy(value: boolean): void;

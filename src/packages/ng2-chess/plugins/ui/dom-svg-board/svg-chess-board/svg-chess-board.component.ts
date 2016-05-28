@@ -27,11 +27,9 @@ import {
 } from '../../../../../ng2-chess';
 import { SVGChessBlock, SVGChessPiece, SVGChessBanner, SVGChessHighlight } from '../index';
 
-function log(msg: any) {
-  if ('production' !== ENV) {
-    console.log(msg);
-  }
-}
+
+const log = 'development' === ENV ? (msg) => console.log(msg) : (msg) => {};
+
 export interface BlockDropEvent {
   block: SVGChessBlock,
   event: MouseEvent
@@ -69,7 +67,8 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
   private isDisabled: boolean;
   private banner: { title: string, message: string };
 
-  private highlights: Block[];
+  private highlighted: Block[];
+
   @ViewChild('board') private boardElRef: ElementRef;
   @ViewChildren(<any>SVGChessBlock) private blocks: QueryList<SVGChessBlock>;
   @ViewChildren(<any>SVGChessPiece) private pieces: QueryList<SVGChessPiece>;
@@ -118,6 +117,11 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
   }
 
   newGame(): Promise<void> {
+    this.clearSubscriptions();
+
+    this.busy(false);
+    this.blockUi(false);
+
     this.rxWaste.push(this.engine.boardSynced.subscribe( () => this.syncPiecesToBlocks() ));
     this.rxWaste.push(this.engine.stateChanged.subscribe(newState => this.onStateChanged(newState) ));
 
@@ -125,7 +129,7 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
     this.registerDragAndDrop();
 
     this.cdr.markForCheck();
-    return this.engine.newGame();
+    return Promise.resolve();
   }
 
   private clearSubscriptions() {
@@ -139,6 +143,7 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
    */
   blockUi(value: boolean): void {
     this.isDisabled = value;
+    this.cdr.markForCheck();
   }
 
   /**
@@ -147,6 +152,12 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
      */
   busy(value: boolean): void {
     this.isBusy = value;
+    this.cdr.markForCheck();
+  }
+
+  highlight(blocks: Block[]): void {
+    this.highlighted = blocks;
+    this.cdr.markForCheck();
   }
 
   /**
@@ -192,7 +203,8 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
       let lastY = md.offsetY;
 
       // get all blocks that are a legal move for the current dragged piece
-      this.highlights = this.engine.moves(this.dragPiece.piece);
+      // TODO: Move to Controller
+      this.highlight(this.engine.moves(this.dragPiece.piece));
 
       // Calculate delta with mousemove until mouseup
       return mousemove.map((mm: MouseEvent) => {
@@ -240,16 +252,19 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
    * You can use this function to move UI elements so they will be illegal!
    * Note that moving a piece to an occupied block will remove the tenant from the UI.
    * @param piece
-   * @param to
    */
-  move(piece: Piece, to: Block): void {
-
-    let idx = BaseBlock.posToIndex(to.pos);
-    const toBlockCmp = this.blocks.toArray()[idx];
+  move(piece: Piece): void {
     const pieceCmp = this.pieces.toArray().filter(p => p.piece === piece)[0];
 
-    pieceCmp.block = toBlockCmp;
-    pieceCmp.reset(150);
+    if (pieceCmp) {
+      const toBlockCmp = this.blocks.toArray()[piece.block.index];
+      pieceCmp.block = toBlockCmp;
+      pieceCmp.reset(150);
+    } else if (this.engine.pieces.indexOf(piece) > -1) {
+      // item in collection but not kicked in by CD
+      // we need to let the VM turn end for CD to kick it.
+      setTimeout( () => this.move(piece) );
+    }
   }
 
   private dropPiece(mu) {
@@ -299,7 +314,7 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
   private endDragAndDrop() {
     this.dragPiece.dragEnd(); // let the piece set itself inside the block and trigger CD.
     this.dragPiece = undefined; // reset drag placeholders.
-    this.highlights = [];
+    this.highlighted = [];
   }
 
   /**

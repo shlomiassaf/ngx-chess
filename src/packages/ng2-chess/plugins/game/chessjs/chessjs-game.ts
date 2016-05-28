@@ -80,7 +80,7 @@ export class ChessJSGame extends ChessEngine {
   init(): Promise<void> {
     return Promise.resolve();
   }
-  
+
   newGame(): Promise<void> {
     this.chess = new Chess();
     this.pieces = this.createPieces();
@@ -117,12 +117,34 @@ export class ChessJSGame extends ChessEngine {
 
     // if it was a kill, remove the piece from the board.
     if (!move.invalid) {
-      this.updateMove(move, piece, toBlock);
+      move.effected = this.updateMove(move, piece, toBlock);
       this.checkState();
     }
 
     return move;
   }
+
+  undo(): ChessMove {
+    if (this.state !== GAME_STATE.ACTIVE && this.state !== GAME_STATE.CHECK) {
+      return util.move.factory(null);
+    }
+
+    const move = util.move.factory(this.chess.undo());
+
+    if (!move.invalid) {
+      const piece = this.getPiece(move.to),
+            toBlock = this.getBlock(move.from);
+
+      // move.from = move.to;
+      // move.to = toBlock.pos;
+
+      move.effected = this.updateMove(move, piece, toBlock, true);
+      this.checkState();
+    }
+
+    return move;
+  }
+
 
   turn(): PieceColor {
     return util.color.from(this.chess.turn());
@@ -234,11 +256,13 @@ export class ChessJSGame extends ChessEngine {
    * @param move
    * @param piece
    * @param newBlock
+   * @returns A collection of all pieces effected by this move.
      */
-  private updateMove(move: ChessMove, piece: Piece, newBlock: Block) {
+  private updateMove(move: ChessMove, piece: Piece, newBlock: Block, revert: boolean = false): Piece[] {
+    const effected: Piece[] = [piece];
 
     if (move.isPromotionMove()) {
-      piece.type = move.promotion;
+      piece.type = revert ? move.piece : move.promotion;
     }
 
     if (move.isCaptureMove()) {
@@ -247,15 +271,24 @@ export class ChessJSGame extends ChessEngine {
       // The only case where default is invalid is when an En Passant happen since the captured
       // piece is not on the block the acting piece landed on, in such case we will add the offset
       // to the index so we will point to the right kill block.
-      let killIndex = newBlock.index;
-      if (move.type === MoveType.EnPassant) {
-        // TODO: row/col are inverted for some reason... fix and change here to row.
-        killIndex += (newBlock.col > piece.block.col ? -1 : 1);
+      if (revert) {
+        const p = this.capturedPieces.pop();
+        this.pieces.push(p);
+        p.block = piece.block;
+        p.captured = false;
+        effected.push(p);
+      } else {
+        let killIndex = newBlock.index;
+        if (move.type === MoveType.EnPassant) {
+          // TODO: row/col are inverted for some reason... fix and change here to row.
+          killIndex += (newBlock.col > piece.block.col ? -1 : 1);
+        }
+        const p = this.getPiece(this.blocks[killIndex].pos);
+        p.capture();
+        this.pieces.splice(this.pieces.indexOf(p), 1);
+        this.capturedPieces.push(p);
+        effected.push(p);
       }
-      const p = this.getPiece(this.blocks[killIndex].pos);
-      p.capture();
-      this.pieces.splice(this.pieces.indexOf(p), 1);
-      this.capturedPieces.push(p);
     }
 
     // can be else if...
@@ -263,16 +296,30 @@ export class ChessJSGame extends ChessEngine {
       // in castling we have to also take into consideration the Rook which moves next to the king.
       // king side castling: kings lands 1 block from the rook and we need to move it to the other side
       // queen side castling: kings lands 2 blocks from the rook and we need to move it to the other next.
-      let matrix = newBlock.row > piece.block.row ? [1, -1] : [-2, 1],
-        rookSrcIndex = newBlock.index + this.rowCount * matrix[0],
-        rookDstIndex = newBlock.index + this.rowCount * matrix[1];
+      if (revert) {
+        let matrix = piece.block.row > newBlock.row ? [1, -1] : [-2, 1],
+          rookSrcIndex = piece.block.index + this.rowCount * matrix[0],
+          rookDstIndex = piece.block.index + this.rowCount * matrix[1];
 
-      // find the rook piece and set it's block to our "after castling" block.
-      this.getPiece(this.blocks[rookSrcIndex].pos).block = this.blocks[rookDstIndex];
+        const p = this.getPiece(this.blocks[rookDstIndex].pos);
+        p.block = this.blocks[rookSrcIndex];
+        effected.push(p);
+      }
+      else {
+        let matrix = newBlock.row > piece.block.row ? [1, -1] : [-2, 1],
+          rookSrcIndex = newBlock.index + this.rowCount * matrix[0],
+          rookDstIndex = newBlock.index + this.rowCount * matrix[1];
+
+        // find the rook piece and set it's block to our "after castling" block.
+        const p = this.getPiece(this.blocks[rookSrcIndex].pos);
+        p.block = this.blocks[rookDstIndex];
+        effected.push(p);
+      }
     }
 
     // in any case, our acting piece should now reflect the block it moved to.
     piece.block = newBlock;
+    return effected;
   }
 
   private checkState() {

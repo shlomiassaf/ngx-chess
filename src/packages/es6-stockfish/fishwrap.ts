@@ -19,7 +19,7 @@ export class FishWrap extends UCICommandRouter {
   constructor(debug?: boolean) {
     super(
       undefined,
-      (cmd: any, tokens: string[]) => console.log('UNKNOWN HANDLER: ' + tokens.join(' '))
+      (cmd: any, tokens: string[]) => debug && console.log('UNKNOWN HANDLER: ' + tokens.join(' '))
     );
     if (debug === true) this.__debug__ = true;
   }
@@ -168,13 +168,13 @@ export class FishWrap extends UCICommandRouter {
 
   stop(): Promise<void> {
     const ok = UCI_MSG_IN.readyok;
-    let queItem;
+    const queItem = this.que.find(ok) || this.que.find(UCI_MSG_IN.bestmove);
 
-    if (queItem = this.que.find(ok)) {
+    if (queItem && queItem.cmd === ok) {
       return queItem.promise.then( () => this.stop() );
     } else {
       this.post(UCI_MSG_OUT.asStr(UCI_MSG_OUT.stop));
-      return this.isready();
+      return queItem ? <any>queItem.promise : this.isready();
     }
   }
 

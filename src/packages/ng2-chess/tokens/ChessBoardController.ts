@@ -6,10 +6,12 @@ import { ChessBoard } from './ChessBoard';
 
 const DEFAULT_TIME = 144000; // 2.4 mins
 
-
 export class ChessBoardController {
-  constructor(protected board: ChessBoard, protected engine: ChessEngine) {}
-
+  /**
+   * Indicates if the AI Engine is processing.
+   * @type {boolean}
+   */
+  aiProcessing: boolean = false;
 
   get white(): PlayerSettings {
     return this.players[PieceColor.WHITE];
@@ -31,6 +33,8 @@ export class ChessBoardController {
 
   // the enum is the index;
   private players: PlayerSettings[] = [null, new PlayerSettings(), new PlayerSettings()];
+
+  constructor(protected board: ChessBoard, protected engine: ChessEngine) {}
 
   /**
    * Let the computer play for a side.
@@ -60,7 +64,7 @@ export class ChessBoardController {
    * i.e: If useAI is not a boolean the controller will use AI if exists.
    */
   newGame(): Promise<void> {
-    return this.board.newGame();
+    return this.board.newGame().then( () => this.engine.newGame())
   }
 
   move(piece: Piece, toBlock: Block, promotion?: PieceType): Promise<ChessMove> {
@@ -75,34 +79,54 @@ export class ChessBoardController {
     const move = this.engine.move(piece, toBlock, promotion);
 
     if (!move.invalid) {
-      this.board.move(piece, toBlock);
+      move.effected.filter( p => !!p.block).forEach( p => this.board.move(p) );
     }
 
     isAI = this.currentPlayer.player === PlayerType.AI;
 
     // if it's computer turn, make him move.
     if (this.engine.aiReady && isAI) {
-      this.setAILevel();
       setTimeout(() => this.doNextMove() , 0);
     }
 
     return Promise.resolve(move);
   }
 
-  aiNextMove(): Promise<ChessMove> {
-    return this.engine.aiNextMove(this.buildQuery());
+  highlight(...blocks: Array<Block|string>): void {
+    this.board.highlight(blocks.map(b => typeof b === 'string' ? this.engine.getBlock(b) : b));
   }
 
-  private doNextMove(): Promise<void> {
+  aiNextMove(): Promise<ChessMove> {
+    this.aiProcessing = true;
+    this.setAILevel();
     this.board.blockUi(true);
     this.board.busy(true);
 
-    return this.aiNextMove()
-      .then(mv => this.move(this.engine.getPiece(mv.from), this.engine.getBlock(mv.to), mv.promotion))
-      .then( () => { // TODO: Enabled on error as well?
+    return this.engine.aiNextMove(this.buildQuery())
+      .then( mv => {
+        this.aiProcessing = false;
         this.board.busy(false);
         this.board.blockUi(false);
+        return mv;
       });
+  }
+
+
+  aiStop(): Promise<void> {
+    return this.engine.aiStop()
+  }
+
+  undo() {
+    const move = this.engine.undo();
+    if (!move.invalid) {
+      move.effected.filter( p => !!p.block).forEach( p => this.board.move(p) );
+    }
+  }
+
+  private doNextMove(): Promise<void> {
+    return this.aiNextMove()
+      .then(mv =>
+        <any>this.move(this.engine.getPiece(mv.from), this.engine.getBlock(mv.to), mv.promotion));
   }
 
   /**

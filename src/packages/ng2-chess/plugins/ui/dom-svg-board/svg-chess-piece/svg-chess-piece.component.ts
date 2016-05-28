@@ -38,8 +38,8 @@ export class SVGChessPiece {
   // before the event handler for the SVG document fires.
   @Output() pieceDrag: EventEmitter<PieceDragEvent> = new EventEmitter(false);
 
-  x: number = 0;
-  y: number = 0;
+  x: number = 300;
+  y: number = 300;
   pointerEvents: string = 'all';
   pieceFilter: string;
 

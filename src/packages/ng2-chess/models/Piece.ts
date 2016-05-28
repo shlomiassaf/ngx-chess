@@ -38,4 +38,6 @@ export class Piece {
     this.block = undefined;
     this.captured = true;
   }
+  
+  
 }

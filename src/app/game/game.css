@@ -57,6 +57,14 @@ md-card, md-card:hover {
   flex: 5 0px;
 }
 
+.game-toolbar {
+  display: flex;
+  justify-content: center;
+}
+
+.game-toolbar > * {
+  margin: 5px;
+}
 .svg-chess-board {
   margin: auto;
   width: 100%;

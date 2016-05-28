@@ -1,4 +1,4 @@
-import { PieceColor, PieceType, MoveType } from '../index';
+import { Piece, PieceColor, PieceType, MoveType } from '../index';
 
 export class ChessMove {
   piece: PieceType;
@@ -13,6 +13,10 @@ export class ChessMove {
    */
   invalid: boolean;
 
+  /**
+   * This pieces effected by this move, i.e pieces that their block/type changed or were captured.
+   */
+  effected: Piece[];
 
   /**
    * Returns true if the move involved a capture.

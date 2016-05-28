@@ -148,6 +148,7 @@ const move = {
   },
   /**
    * Creates a new ChessMove instance from a chess.js move object
+   * NOTE: Does not populate the effected collection.
    * @param orgMove
    * @returns {ChessMove}
    */
