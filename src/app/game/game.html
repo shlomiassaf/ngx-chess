@@ -1,0 +1,54 @@
+<button class="settings-button" md-fab (click)="sidenav.toggle()">
+  <md-icon class="md-24">settings</md-icon>
+</button>
+<md-sidenav-layout class="sidenav-layout">
+  <md-sidenav #sidenav mode="side">
+    <div class="settings-container">
+      <div class="config-section">
+        <h3>Black:</h3>
+        <form>
+          <div class="form-row">
+            <md-radio-group [(ngModel)]="black.rawtype" (change)="onPlayerTypeChange($event, black)">
+              <md-radio-button value="HUMAN">Human</md-radio-button>
+              <md-radio-button value="AI">Computer</md-radio-button>
+            </md-radio-group>
+          </div>
+          <div class="form-row">
+            <label>AI Level:</label>
+            <select (change)="onAILevelChange($event, black)">
+              <option *ngFor="let i of aiLevels" [attr.value]="i"
+                      [attr.selected]="black.aiIndex === i">{{i}}</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="config-section">
+        <h3>White:</h3>
+        <form>
+          <div class="form-row">
+            <md-radio-group [(ngModel)]="white.rawtype" (change)="onPlayerTypeChange($event, white)">
+              <md-radio-button value="HUMAN">Human</md-radio-button>
+              <md-radio-button value="AI">Computer</md-radio-button>
+            </md-radio-group>
+          </div>
+          <div class="form-row">
+            <label>AI Level:</label>
+            <select (change)="onAILevelChange($event, white)">
+              <option *ngFor="let i of aiLevels" [attr.value]="i"
+                      [attr.selected]="white.aiIndex === i">{{i}}</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="config-section">
+        <button md-button color="primary" (click)="onNewGame()">New Game</button>
+        <!--<button md-button color="accent" (click)="onNewGame()">Stop</button>-->
+      </div>
+    </div>
+  </md-sidenav>
+  <md-card class="board-container">
+    <br>
+    <chess-board class="svg-chess-board" #board></chess-board>
+  </md-card>
+</md-sidenav-layout>
+

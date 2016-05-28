@@ -1,0 +1,53 @@
+<svg [attr.viewBox]="viewBox"
+     class="chess-board"
+     preserveAspectRatio="xMidYMid meet" #board>
+
+  <!-- Drop shadow for a piece -->
+  <defs>
+    <filter id="pieceDropShadow" x="0" y="0" width="500%" height="500%">
+      <feOffset result="offsetblur" in="SourceGraphic" dx="5" dy="5" />
+      <feGaussianBlur result="blurOut" in="offsetblur" stdDeviation="4.2" />
+      <feBlend in="SourceGraphic" in2="blurOut" mode="normal" x="-10" />
+    </filter>
+    <filter id="blockHighlight">
+      <feOffset dy="8" dx="8"/>
+      <feGaussianBlur stdDeviation="2.5" result="offset-blur"/>
+      <feComposite operator="out" in2="offset-blur" in="SourceGraphic" result="inverse"/>
+      <feFlood result="color" flood-color="#b33e00" flood-opacity=".8"/>
+      <feComposite operator="in" in2="inverse" in="color" result="shadow"/>
+      <feComposite in2="SourceGraphic" in="shadow"/>
+    </filter>
+  </defs>
+
+  <svg:g *ngFor="let block of engine.blocks"
+         chess-block
+         [block]="block"
+         [size]="blockSize">
+  </svg:g>
+  <svg:g *ngFor="let hl of highlights"
+         chess-highlight
+         [block]="hl"
+         [size]="blockSize">
+  </svg:g>
+  <svg:g *ngFor="let piece of engine.pieces"
+         chess-piece
+         [piece]="piece"
+         (pieceDrag)="onPieceDrag($event)">
+  </svg:g>
+  <svg:g *ngIf="banner"
+         chess-banner
+         [title]="banner.title"
+         [message]="banner.message">
+  </svg:g>
+  <svg class="stop-watch-svg" width="92.5" height="110" viewBox="0 0 185 220" *ngIf="isBusy">
+    <g>
+      <circle class="hand" cx="90" cy="130" r="25" />
+      <circle class="basel" cx="90" cy="130" r="79.2" />
+      <rect x="60" y="0" width="60" height="20" />
+      <rect x="80" y="19" width="20" height="11" />
+      <g transform="translate(170, 75) rotate(227)">
+        <rect class="sw-button" width="31.3" height="20.6" />
+      </g>
+    </g>
+  </svg>
+</svg>

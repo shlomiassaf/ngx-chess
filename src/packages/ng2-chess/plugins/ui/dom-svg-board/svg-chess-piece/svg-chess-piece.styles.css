@@ -1,0 +1,249 @@
+.chess-piece {
+  cursor: pointer;
+}
+
+/* ========================================================================================
+                                          PAWN
+   ======================================================================================== */
+.pawn {
+  opacity: 1;
+  fill: #000000;
+  fill-opacity: 1;
+  fill-rule: nonzero;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: miter;
+  stroke-miterlimit: 4;
+  stroke-dasharray: none;
+  stroke-opacity: 1;
+}
+
+.white .pawn {
+  opacity: 1;
+  fill: #ffffff;
+  fill-opacity: 1;
+  fill-rule: nonzero;
+  stroke: #000000;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: miter;
+  stroke-miterlimit: 4;
+  stroke-dasharray: none;
+  stroke-opacity: 1;
+}
+
+
+/* ========================================================================================
+                                          BISHOP
+   ======================================================================================== */
+.bishop {
+  opacity: 1;
+  fill: none;
+  fill-rule: evenodd;
+  fill-opacity: 1;
+  stroke: #000000;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-miterlimit: 4;
+  stroke-dasharray: none;
+  stroke-opacity: 1;
+}
+
+.bishop-body {
+  stroke: #ffffff;
+  fill: #000000;
+  stroke-linecap: butt;
+}
+
+.bishop-cross {
+  fill: none;
+  stroke: #ffffff;
+  stroke-linejoin: miter;
+}
+
+.white .bishop {
+  stroke: #ffffff;
+}
+
+.white .bishop-body {
+  stroke: #000000;
+  fill: #ffffff;
+}
+
+.white .bishop-cross {
+  stroke: #000000;
+}
+
+
+/* ========================================================================================
+                                          KNIGHT
+   ======================================================================================== */
+.knight > path,
+.knight-body > path {
+  fill: #000000;
+  fill-opacity: 1;
+  fill-rule: evenodd;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  stroke-linecap: butt;
+  stroke-linejoin: round;
+  stroke-miterlimit: 4;
+  stroke-dasharray: none;
+  stroke-opacity: 1
+}
+
+.knight-body > path {
+  stroke-linecap: round;
+  stroke-linejoin: miter;
+}
+
+.knight-body > path:nth-child(2) {
+  stroke-linejoin:round;
+}
+.knight-body > path:nth-child(3),
+.knight-body > path:nth-child(4) {
+  fill: #ffffff;
+}
+
+.knight-body > path:nth-child(5) {
+  fill: none;
+  fill-opacity: 0.75;
+  stroke: #ffffff;
+}
+
+.white .knight > path:last-child,
+.knight > path:last-child {
+  fill: none;
+  fill-opacity: 0.75;
+}
+
+.white .knight > path,
+.white .knight-body > path {
+  fill: #ffffff;
+  stroke: #000000;
+}
+
+.white .knight-body > path:nth-child(3),
+.white .knight-body > path:nth-child(4) {
+  fill: #000000;
+}
+
+.white .knight-body > path:nth-child(5) {
+  fill: none;
+  stroke: #000000;
+}
+
+/* ========================================================================================
+                                          ROOK
+   ======================================================================================== */
+.rook {
+  opacity: 1;
+  fill: #000000;
+  fill-opacity: 1;
+  fill-rule: evenodd;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  stroke-linecap: round;stroke-linejoin: round;stroke-miterlimit: 4;
+  stroke-dasharray: none;
+  stroke-opacity: 1;
+
+}
+
+.rook > path:last-child {
+  fill: none;
+  stroke: #ffffff;
+  stroke-linejoin: miter;
+}
+
+.white .rook {
+  fill: #ffffff;
+  stroke: #000000;
+}
+
+.white .rook > path:last-child {
+  fill: none;
+  stroke: #000000;
+}
+
+
+/* ========================================================================================
+                                          QUEEN
+   ======================================================================================== */
+.queen {
+  opacity: 1;
+  fill: #000000;
+  fill-opacity: 1;
+  fill-rule: evenodd;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-miterlimit: 4;
+  stroke-dasharray: none;
+  stroke-opacity: 1;
+}
+
+.queen > path:nth-child(6),
+.queen > path:nth-child(7) {
+  stroke-linecap: butt;
+}
+
+.queen > path:nth-child(8),
+.queen > path:nth-child(9) {
+  fill: none;
+}
+
+.white .queen {
+  fill: #ffffff;
+  stroke: #000000;
+}
+
+/* ========================================================================================
+                                          KING
+   ======================================================================================== */
+.king {
+  fill: none;
+  fill-opacity: 1;
+  fill-rule: evenodd;
+  stroke: #000000;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-miterlimit: 4;
+  stroke-dasharray: none;
+  stroke-opacity: 1;
+
+}
+
+.king > path {
+  fill: none;
+  stroke: #ffffff;
+  stroke-linejoin: miter;
+}
+.king > path:nth-child(3) {
+  fill: #000000;
+}
+.king > path:nth-child(4) {
+  fill: #000000;
+  stroke: #ffffff;
+}
+
+.white .king {
+  stroke: #ffffff;
+}
+
+.white .king > path {
+  fill: none;
+  stroke: #000000;
+}
+
+.white .king > path:nth-child(3) {
+  fill: #ffffff;
+}
+
+.white .king > path:nth-child(4) {
+  fill: #ffffff;
+  stroke: #000000;
+}

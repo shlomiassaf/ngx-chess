@@ -1,0 +1,45 @@
+/*.chess-highlight {*/
+  /*stroke-dasharray: 140 540;*/
+  /*stroke-dashoffset: -474;*/
+  /*stroke-width: 28px;*/
+  /*fill: transparent;*/
+  /*stroke: #2861b5;*/
+  /*transition: stroke-width 0.5s, stroke-dashoffset 0.5s, stroke-dasharray 0.5s;*/
+/*}*/
+
+/*.chess-highlight-active {*/
+  /*stroke-width: 4.5px;*/
+  /*stroke-dashoffset: 0;*/
+  /*stroke-dasharray: 760;*/
+/*}*/
+
+
+.chess-highlight {
+  fill: transparent;
+  stroke-dasharray: 140 540;
+  stroke-dashoffset: -474;
+  stroke-width: 8px;
+  stroke: #19f6e8;
+}
+
+@keyframes highlightEntrance {
+  0% {
+    stroke-dasharray: 140 540;
+    stroke-dashoffset: -474;
+    stroke-width: 16px;
+  }
+  99% {
+    stroke-dasharray: 760;
+    stroke-dashoffset: 0;
+    stroke-width: 3px;
+  }
+  100% {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    stroke-width: 3px;
+  }
+}
+.chess-highlight-active {
+  -webkit-animation: 0.5s highlightEntrance linear forwards;
+  animation: 0.5s highlightEntrance linear forwards;
+}

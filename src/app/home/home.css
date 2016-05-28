@@ -1,0 +1,18 @@
+.home {
+  padding-left: 24px;
+  padding-right: 24px;
+  text-align: center;
+  color: #009688;
+}
+
+.home h1 {
+  color: #9c27b0;
+}
+.home p > a {
+  font-size: 1.15em;
+}
+.board-container {
+  padding-top: 25px;
+  padding-left: 25%;
+  width: 50%;
+}
