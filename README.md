@@ -66,8 +66,11 @@ Currently controllers are not really plugins, they are intended as such.
 
 ## TODOs:
 
- * Move to **Web Worker**, classic web worker use case.
+ * Move to **Web Worker**, classic web worker use case
  * Lazy load the Chessjs-AI plugin
+ * Integration with FireBase (for P2P play, save, etc...)
+ * Promotion popup (currently defaults to Queen)
+ * Next move hint
  * More boards / engines?
  * Change DI, board will get controller when new game is set (controller will hold engine via DI)?
  * NPM Publish script + publish
