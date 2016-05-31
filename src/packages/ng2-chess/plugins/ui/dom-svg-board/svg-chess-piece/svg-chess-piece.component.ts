@@ -82,6 +82,7 @@ export class SVGChessPiece {
     this.pieceFilter = null;
     this.pointerEvents = 'all';
     scaleFactor = scaleFactorNormal;
+    this.cdr.markForCheck();
   }
 
   setCoordinates(x: number, y: number) {

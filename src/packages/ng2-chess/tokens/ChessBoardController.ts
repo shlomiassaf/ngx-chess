@@ -1,4 +1,4 @@
-import { Block, Piece, PieceColor, PieceType, ChessMove, PlayerType,
+import { Block, Piece, PieceColor, PieceType, ChessMove, PlayerType, GAME_STATE,
          AIQuery, PlayerSettings } from '../index';
 
 import { ChessEngine } from './ChessEngine';
@@ -124,9 +124,15 @@ export class ChessBoardController {
   }
 
   private doNextMove(): Promise<void> {
-    return this.aiNextMove()
-      .then(mv =>
-        <any>this.move(this.engine.getPiece(mv.from), this.engine.getBlock(mv.to), mv.promotion));
+    // TODO: Remove check for end game in next version, ChessBoardControlelr should get event on
+    // state changed
+    if (this.engine.state === GAME_STATE.ACTIVE || this.engine.state === GAME_STATE.CHECK) {
+      return this.aiNextMove()
+        .then(mv =>
+          <any>this.move(this.engine.getPiece(mv.from), this.engine.getBlock(mv.to), mv.promotion));
+    } else {
+      return Promise.resolve();
+    }
   }
 
   /**

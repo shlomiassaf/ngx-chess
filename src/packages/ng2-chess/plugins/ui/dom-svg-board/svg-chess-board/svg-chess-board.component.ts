@@ -182,9 +182,13 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
     let svgElement: SVGSVGElement = this.boardElRef.nativeElement;
 
     let mousedown = Observable.fromEvent(svgElement, 'mousedown');
+    let touchstart = Observable.fromEvent(svgElement, 'touchstart');
+
     let mousemove = Observable.fromEvent(svgElement, 'mousemove');
+    let touchmove = Observable.fromEvent(svgElement, 'touchmove');
     // TODO: maybe catch mouseup on root component, get root via appRef boot event.
     let mouseup   = Observable.fromEvent(document, 'mouseup'); // catch drops everywhere
+    let touchend   = Observable.fromEvent(document, 'touchend'); // catch drops everywhere
 
     let mousedrag = mousedown.flatMap((md: MouseEvent) => {
       if (this.isDisabled || !this.dragPiece) return []; // only track when piece is clicked, nothing else.
@@ -229,12 +233,73 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
       }).takeUntil(mouseup); // stop moving when mouse is up
     });
 
+    let touchdrag = touchstart.flatMap((md: TouchEvent) => {
+      if (this.isDisabled) return []; // only track when piece is clicked, nothing else.
+      if (md.touches.length < 1) return [];
+
+      // Accurate piece selection won't do in mobile, we select a piece if it's block was touched.
+      const rect = svgElement.getBoundingClientRect();
+      let   lastX = md.touches[0].pageX - rect.left,
+            lastY = md.touches[0].pageY - rect.top,
+            dropBlockIndex = BaseBlock.pointToIndex(lastX * this.ratioX, lastY * this.ratioY);
+
+      this.dragPiece = this.pieces.toArray().filter(p => p.piece.block.index === dropBlockIndex)[0];
+
+      if (!this.dragPiece) return [];
+
+      // only drag when it's the piece turn.
+      if (this.dragPiece.piece.color !== this.engine.turn()) return [];
+
+
+      // since SVG is responsive 1 mouse px != 1 svg px
+      // we get SVG px and we need a conversion ratio, from SVG to mouse px:
+      const viewPortRatioX = this.ratioX,
+            viewPortRatioY = this.ratioY;
+
+      this.dragPiece.dragStart();
+
+      // get all blocks that are a legal move for the current dragged piece
+      // TODO: Move to Controller
+      this.highlight(this.engine.moves(this.dragPiece.piece));
+
+      // Calculate delta with mousemove until mouseup
+      return touchmove.map((mm: TouchEvent) => {
+        mm.preventDefault();
+
+        let x = mm.touches[0].pageX - rect.left,
+            y = mm.touches[0].pageY - rect.top,
+            newScale = svgElement.currentScale,
+            translation = svgElement.currentTranslate;
+
+        x = (x - translation.x) / newScale;
+        y = (y - translation.y) / newScale;
+
+        let res =  {
+          x: x - lastX,
+          y: y - lastY
+        };
+
+        lastX = mm.touches[0].pageX - rect.left;
+        lastY = mm.touches[0].pageY - rect.top;
+
+        res.x *= viewPortRatioX;
+        res.y *= viewPortRatioY;
+        return res;
+      }).takeUntil(touchend); // stop moving when mouse is up
+    });
+
     // Update coordinates of the dragged piece
     let subscription = mousedrag.subscribe(pos => pos && this.dragPiece.setCoordinates(pos.x, pos.y));
     this.rxWaste.push(subscription);
 
+    subscription = touchdrag.subscribe(pos => pos && this.dragPiece.setCoordinates(pos.x, pos.y));
+    this.rxWaste.push(subscription);
+
     // take action when a piece is dropped
     subscription = mouseup.subscribe(mu => this.dragPiece && this.dropPiece(mu));
+    this.rxWaste.push(subscription);
+
+    subscription = touchend.subscribe(mu => this.dragPiece && this.dropPiece(mu));
     this.rxWaste.push(subscription);
   }
 
@@ -273,7 +338,14 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
     // need to have 2 observables for document and for SVG element and merge them to one. (SVG should preventDefault)
     // the document observables should emit value that this function can identify then cancel the drop.
 
-    const dropBlockIndex = BaseBlock.pointToIndex(mu.offsetX * this.ratioX, mu.offsetY * this.ratioY);
+    let x = mu.offsetX, y = mu.offsetY;
+    if ( x === undefined || y === undefined ) {
+      const rect = this.boardElRef.nativeElement.getBoundingClientRect();
+      x = mu.changedTouches[0].pageX - rect.left;
+      y = mu.changedTouches[0].pageY - rect.top;
+    }
+
+    const dropBlockIndex = BaseBlock.pointToIndex(x * this.ratioX, y * this.ratioY);
     const dropBlock = this.blocks.toArray()[dropBlockIndex];
 
     // take action only when user dropped on a block
