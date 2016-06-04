@@ -17,7 +17,7 @@ const ForkCheckerPlugin = require('awesome-typescript-loader').ForkCheckerPlugin
  * Webpack Constants
  */
 const METADATA = {
-  title: 'Angular2 Webpack Starter by @gdi2290 from @AngularClass',
+  title: 'Angular 2 Chess - A plugin oriented Chess component built with angular 2',
   baseUrl: '/',
   isDevServer: helpers.isWebpackDevServer()
 };
