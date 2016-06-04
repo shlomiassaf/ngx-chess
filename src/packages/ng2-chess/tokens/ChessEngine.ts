@@ -76,4 +76,8 @@ export abstract class ChessEngine {
   aiStop(): Promise<void> {
     return Promise.resolve();
   }
+  
+  destroy(): void {
+    
+  }
 }

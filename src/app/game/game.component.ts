@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { MdSidenav } from '@angular2-material/sidenav/sidenav';
 import { MdRadioChange } from '@angular2-material/radio/radio';
 
@@ -26,14 +26,14 @@ class Player {
   styles: [ require('./game.css') ],
   template: require('./game.html')
 })
-export class Game implements AfterViewInit {
+export class Game implements AfterViewInit, OnDestroy {
   aiLevels = [1,2,3,4,5,6,7,8,9,10];
 
   black: Player = new Player(PieceColor.BLACK, PlayerType.AI, 9);
   white: Player = new Player(PieceColor.WHITE, PlayerType.HUMAN, 9);
 
   workerSupported: boolean = typeof(Worker) !== "undefined";
-  
+
   @ViewChild('sidenav') private sidenav: MdSidenav;
   @ViewChild('board') private board: ChessBoard;
 
@@ -41,7 +41,7 @@ export class Game implements AfterViewInit {
 
   private ctrl: ChessBoardController;
 
-  
+
   constructor() {}
 
   ngAfterViewInit() {
@@ -49,6 +49,10 @@ export class Game implements AfterViewInit {
     this.ctrl.init()
       .then( () => this.sidenav.toggle(true) );
 
+  }
+
+  ngOnDestroy() {
+    this.ctrl.destroy();
   }
 
   onPlayerTypeChange(event: MdRadioChange, player: Player): void {
@@ -65,7 +69,7 @@ export class Game implements AfterViewInit {
       .setPlayer(this.black.color, this.black.type, this.getLevel(this.black.aiIndex))
       .setPlayer(this.white.color, this.white.type, this.getLevel(this.white.aiIndex))
       .newGame();
-    
+
     this.isInit = true;
   }
 

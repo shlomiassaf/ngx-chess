@@ -137,5 +137,11 @@ export class ChessJSGameAI extends ChessJSGame {
   aiStop(): Promise<void> {
     return this.fishWrap.stop();
   }
+
+  destroy(): void {
+    if (this.fishWrap) {
+      this.fishWrap.destroy();
+    }
+  }
 }
 

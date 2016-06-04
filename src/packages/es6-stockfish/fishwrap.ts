@@ -24,7 +24,7 @@ export class FishWrap extends UCICommandRouter {
   meta: FishwrapMeta;
   isInit: boolean = false;
 
-  protected sf: Stockfish;
+  protected sf: Stockfish & { terminate?: () => void };
   protected que: PromisedUCIQueue = new PromisedUCIQueue();
 
   /**
@@ -199,6 +199,10 @@ export class FishWrap extends UCICommandRouter {
     this.isInit = false;
     this.meta = undefined;
     if (this.sf) {
+      if (typeof this.sf.terminate === 'function') {
+        this.sf.terminate();  
+      }
+      
       this.sf.onmessage = undefined;
       this.sf = undefined;
     }

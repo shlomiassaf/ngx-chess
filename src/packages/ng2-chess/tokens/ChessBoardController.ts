@@ -123,6 +123,10 @@ export class ChessBoardController {
     }
   }
 
+  destroy(): void {
+    this.engine.destroy();
+  }
+  
   private doNextMove(): Promise<void> {
     // TODO: Remove check for end game in next version, ChessBoardControlelr should get event on
     // state changed

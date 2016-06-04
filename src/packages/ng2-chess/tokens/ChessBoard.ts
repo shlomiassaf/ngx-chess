@@ -11,7 +11,6 @@ export abstract class ChessBoard {
     Object.defineProperty(this, 'ctrl', { value: new CtrlType(this, engine) });
   }
 
-
   abstract highlight(blocks: Block[]);
   abstract newGame(): Promise<void>;
   abstract move(piece: Piece): void;
