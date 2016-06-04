@@ -69,7 +69,7 @@ export class UCICommandRouter extends CommandRouter {
 
   protected transformCommand(cmd: string): any {
     //convert string to enum
-    return UCI_MSG_IN[cmd];
+    return UCI_MSG_IN[cmd] || cmd;
   }
 
   protected getHandlerName(cmd: UCI_MSG_IN): string {

@@ -6,13 +6,6 @@ import { ChessBoard, ChessBoardController, PieceColor, PlayerType, BaseBlock } f
 import { DOM_SVG_KIT_DIRECTIVES } from '../../packages/ng2-chess/plugins/ui/dom-svg-board';
 import { CHESSJS_AI_CHESS_GAME_PROVIDERS } from '../../packages/ng2-chess/plugins/game/chessjs-ai';
 
-/*
- When ng2-chess is an npm module:
- import { DOM_SVG_KIT_DIRECTIVES } from 'ng2-chess/plugins/ui/dom-svg-board';
- import { CHESSJS_CHESS_GAME_PROVIDERS } from 'ng2-chess/plugins/game/chessjs';
- import { CHESSJS_AI_CHESS_GAME_PROVIDERS } from 'ng2-chess/plugins/game/chessjs-ai';
- */
-
 class Player {
   get rawtype(): string {
     return PlayerType[this.type];
@@ -39,6 +32,8 @@ export class Game implements AfterViewInit {
   black: Player = new Player(PieceColor.BLACK, PlayerType.AI, 9);
   white: Player = new Player(PieceColor.WHITE, PlayerType.HUMAN, 9);
 
+  workerSupported: boolean = typeof(Worker) !== "undefined";
+  
   @ViewChild('sidenav') private sidenav: MdSidenav;
   @ViewChild('board') private board: ChessBoard;
 
@@ -46,6 +41,7 @@ export class Game implements AfterViewInit {
 
   private ctrl: ChessBoardController;
 
+  
   constructor() {}
 
   ngAfterViewInit() {

@@ -56,6 +56,7 @@ interface WebpackModule {
 
 interface WebpackRequire {
   context(file: string, flag?: boolean, exp?: RegExp): any;
+  ensure(dependencies: Array<string>, callback: (require: WebpackRequire) => void);
 }
 
 

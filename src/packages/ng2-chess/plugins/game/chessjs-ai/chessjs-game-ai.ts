@@ -10,6 +10,7 @@ import {
 } from 'ng2-chess';
 
 import { ChessJSGame, util } from '../chessjs';
+const WEBWORKER_SUPPORTED = typeof(Worker) !== "undefined";
 
 /**
  * A Chess game controller using the chess.js game controller and stockfish as AI.
@@ -70,7 +71,7 @@ export class ChessJSGameAI extends ChessJSGame {
       .then( () => {
         if (!this.fishWrap) {
           const debug = 'development' === ENV;
-          this.fishWrap = new FishWrap(debug);
+          this.fishWrap = new FishWrap(WEBWORKER_SUPPORTED, debug);
         }
 
         return this.fishWrap.uci();
@@ -108,7 +109,7 @@ export class ChessJSGameAI extends ChessJSGame {
       this.fwHistory.pop();
       this.fishWrap.position(POSITION_SET_TYPE.startpos, this.fwHistory.join(' '));
     }
-    
+
     return move;
   }
 
