@@ -17,11 +17,6 @@ import { UCI_MSG_IN, UCI_MSG_OUT, POSITION_SET_TYPE, OPTION_NAME } from './enums
 import { flatMessage } from './util';
 import { getStockfish } from './fishwrap.shared';
 
-// const STOCKFISH = require('exports?STOCKFISH!./lib/stockfish6');
-// const STOCKFISH_WORKER_FACTORY = require("worker!./fishwrap.worker");
-// const STOCKFISH: () => STOCKFISH_WORKER = () => new STOCKFISH_WORKER_FACTORY();
-
-
 /**
  * A modern JS wrapper around the StockfishJS chess engine.
  */
@@ -33,7 +28,7 @@ export class FishWrap extends UCICommandRouter {
   protected que: PromisedUCIQueue = new PromisedUCIQueue();
 
   /**
-   * 
+   *
    * @param useWebWorker If true will load stockfish in a webworker, otherwise on the UI thread.
    *                     Note that in webworker mode the FishWrap instance runs on the UI thread and
    *                     stockfish runs on the web worker thread.
