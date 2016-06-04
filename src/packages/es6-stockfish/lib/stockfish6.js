@@ -164,18 +164,19 @@ return function ()
         }
         
     /// Is it a web worker?
-    } else if (typeof onmessage !== "undefined" && (typeof window === "undefined" || typeof window.document === "undefined")) {
-        stockfish = STOCKFISH();
-        
-        onmessage = function(event) {
-            stockfish.postMessage(event.data);
-        };
-        
-        stockfish.onmessage = function onlog(line)
-        {
-            postMessage(line);
-        };
-        
-    }
+    } 
+    // else if (typeof onmessage !== "undefined" && (typeof window === "undefined" || typeof window.document === "undefined")) {
+    //     stockfish = STOCKFISH();
+    //    
+    //     onmessage = function(event) {
+    //         stockfish.postMessage(event.data);
+    //     };
+    //    
+    //     stockfish.onmessage = function onlog(line)
+    //     {
+    //         postMessage(line);
+    //     };
+    //    
+    // }
     ///NOTE: If it's a normal browser, we don't need to do anything. The client can use the STOCKFISH() function directly.
 }());

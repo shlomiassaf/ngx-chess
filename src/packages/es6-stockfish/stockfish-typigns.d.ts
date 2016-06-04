@@ -1,5 +1,5 @@
 declare interface Stockfish {
-  postMessage(cmd): void;
+  postMessage(cmd: string | number | boolean): void;
   /**
    * The message handler.
    * @param incoming MessageEvent when running under Worker, string if not.
@@ -9,7 +9,7 @@ declare interface Stockfish {
 
 declare module STOCKFISH {}
 
-declare function  STOCKFISH(): Stockfish
+declare function STOCKFISH(): Stockfish
 
 declare module 'stockfish' {
   export = STOCKFISH;

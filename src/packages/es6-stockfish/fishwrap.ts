@@ -1,13 +1,29 @@
-import { FishwrapMeta, OptionResponse, PromisedUCIQueue, UCICommandRouter, PromisedUCIQueueItem, GoRequest, GoResponse, MoveInfo, BestMove, GoRequestFactory, OptionRequest, OptionRequestFactory} from './index';
+import {
+  FishwrapMeta,
+  OptionResponse,
+  PromisedUCIQueue,
+  UCICommandRouter,
+  PromisedUCIQueueItem,
+  GoRequest,
+  GoResponse,
+  MoveInfo,
+  BestMove,
+  GoRequestFactory,
+  OptionRequest,
+  OptionRequestFactory
+} from './index';
 import { UCI_MSG_IN, UCI_MSG_OUT, POSITION_SET_TYPE, OPTION_NAME } from './enums';
 
 import { flatMessage } from './util';
+import { getStockfish } from './fishwrap.shared';
 
-const STOCKFISH = require('exports?STOCKFISH!./lib/stockfish6');
+// const STOCKFISH = require('exports?STOCKFISH!./lib/stockfish6');
+// const STOCKFISH_WORKER_FACTORY = require("worker!./fishwrap.worker");
+// const STOCKFISH: () => STOCKFISH_WORKER = () => new STOCKFISH_WORKER_FACTORY();
 
 
 /**
- * A modern JS wrapper around the StockfishJS chess enigne
+ * A modern JS wrapper around the StockfishJS chess engine.
  */
 export class FishWrap extends UCICommandRouter {
   meta: FishwrapMeta;
@@ -16,11 +32,15 @@ export class FishWrap extends UCICommandRouter {
   protected sf: Stockfish;
   protected que: PromisedUCIQueue = new PromisedUCIQueue();
 
-  constructor(debug?: boolean) {
-    super(
-      undefined,
-      (cmd: any, tokens: string[]) => debug && console.log('UNKNOWN HANDLER: ' + tokens.join(' '))
-    );
+  /**
+   * 
+   * @param useWebWorker If true will load stockfish in a webworker, otherwise on the UI thread.
+   *                     Note that in webworker mode the FishWrap instance runs on the UI thread and
+   *                     stockfish runs on the web worker thread.
+   * @param debug
+     */
+  constructor(private useWebWorker: boolean, debug?: boolean) {
+    super();
     if (debug === true) this.__debug__ = true;
   }
 
@@ -34,12 +54,14 @@ export class FishWrap extends UCICommandRouter {
       return this.que.find<void>(ok).promise;
     }
     else {
-      this.init();
-      this.post(UCI_MSG_OUT.asStr(UCI_MSG_OUT.uci));
-      return this.que.add(new PromisedUCIQueueItem<void>(ok)).promise
-        .then(() => {
-          this.isInit = true;
-          return;
+      return this.init()
+        .then( () => {
+          this.post(UCI_MSG_OUT.asStr(UCI_MSG_OUT.uci));
+          return this.que.add(new PromisedUCIQueueItem<void>(ok)).promise
+            .then(() => {
+              this.isInit = true;
+              return;
+            });
         });
     }
   }
@@ -187,10 +209,13 @@ export class FishWrap extends UCICommandRouter {
     }
   }
 
-  protected init(): void {
+  protected init(): Promise<void> {
     this.meta = new FishwrapMeta();
-    this.sf = STOCKFISH();
-    this.createStream();
+    return getStockfish(this.useWebWorker)
+      .then( (stockfish: Stockfish) => {
+        this.sf = stockfish;
+        this.createStream();
+      });
   }
 
   private post(msg: string): void {
@@ -201,7 +226,7 @@ export class FishWrap extends UCICommandRouter {
   protected createStream() {
     this.sf.onmessage = (incoming: string | MessageEvent) => {
       let msg = flatMessage(incoming);
-      msg &&  this.route(msg);
+      msg && this.route(msg);
     };
   }
 
@@ -243,4 +268,9 @@ export class FishWrap extends UCICommandRouter {
     }
   }
 
+  protected unknownHandler(cmd: any, tokens: string[]) {
+    if (this.__debug__) {
+      console.log(`UNKNOWN HANDLER -> [${cmd}]: ${tokens.join(' ')}`);
+    }
+  }
 }
