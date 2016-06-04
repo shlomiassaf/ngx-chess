@@ -18,7 +18,8 @@ const ForkCheckerPlugin = require('awesome-typescript-loader').ForkCheckerPlugin
  */
 const METADATA = {
   title: 'Angular2 Webpack Starter by @gdi2290 from @AngularClass',
-  baseUrl: '/'
+  baseUrl: '/',
+  isDevServer: helpers.isWebpackDevServer()
 };
 
 /*
@@ -54,6 +55,15 @@ module.exports = {
     'vendor': './src/vendor.ts',
     'main': './src/main.browser.ts'
 
+  },
+
+  /**
+   * Options affecting the output of the compilation.
+   *
+   * See: http://webpack.github.io/docs/configuration.html#output
+   */
+  output: {
+    publicPath: '/'
   },
 
   /*
