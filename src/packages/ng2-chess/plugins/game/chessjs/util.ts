@@ -98,6 +98,9 @@ const move = {
    */
   from: (type: string): MoveType => {
     switch (type) {
+      case 'np':
+      case 'pn':
+        return MoveType.Promotion;
       case 'n':
         return MoveType.Regular;
       case 'b':
@@ -106,8 +109,6 @@ const move = {
         return MoveType.EnPassant;
       case 'c':
         return MoveType.Capture;
-      case 'p':
-        return MoveType.Promotion;
       case 'k':
         return MoveType.KingSideCastling;
       case 'q':
