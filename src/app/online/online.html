@@ -1,0 +1,79 @@
+<button class="settings-button" md-fab (click)="sidenav.toggle()">
+  <md-icon class="md-24">settings</md-icon>
+</button>
+<md-sidenav-layout class="sidenav-layout">
+  <md-sidenav #sidenav mode="side">
+    <md-spinner class="sidenav-spinner" *ngIf="!users.authDone"></md-spinner>
+
+    <div class="settings-container" *ngIf="users.authDone">
+      <div class="logged-out" *ngIf="!user">
+        <span>Sign in:</span>
+        <button md-button (click)="login.twitter()">Twitter</button>
+        <button md-button (click)="login.facebook()">Facebook</button>
+        <p style="text-align: center; margin-top: 20px; border-top: 2px solid lightblue; border-bottom: 2px solid lightblue">Registration for testers at the moment...</p>
+      </div>
+      <div class="logged-in" *ngIf="user?.user">
+        <div class="my-status">
+          <md-checkbox [checked]="user.user.available"
+                       (change)="onAvailabilityChange($event)"
+                       align="end">I'm Available for play</md-checkbox>
+          <button md-mini-fab (click)="login.logout()" style="float: right">
+            <md-icon class="md-24">power_settings_new</md-icon>
+          </button>
+          <div  *ngFor="let mr of user.matchRefs$ | async">
+            <md-card *ngIf="mr.state === 0 && mr.role === 1">
+              <md-card-title>Match Pending</md-card-title>
+              <md-card-subtitle>Waiting for action</md-card-subtitle>
+              <md-card-content class="invitation-container">
+                <img [src]="mr.user_?.pic" alt="Image of {{mr.user_?.displayName}}">
+                <p>You have a pending invitation from {{mr.user_?.displayName}}</p>
+              </md-card-content>
+              <md-card-actions class="invitation-actions">
+                <button md-raised-button color="primary" (click)="acceptInvite(mr)">ACCEPT</button>
+                <button md-raised-button color="warn" (click)="user.withdrawInvitation(mr, true)">DECLINE</button>
+              </md-card-actions>
+            </md-card>
+            <md-card *ngIf="mr.state === 0 && mr.role === 0">
+              <md-card-title>Match Pending</md-card-title>
+              <md-card-subtitle>Waiting for response.</md-card-subtitle>
+              <md-card-content class="invitation-container">
+                <img [src]="mr.user_?.pic" alt="Image of {{mr.user_?.displayName}}">
+                <p>You have sent an invitation to {{mr.user_?.displayName}}</p>
+              </md-card-content>
+              <md-card-actions class="invitation-actions">
+                <button md-raised-button color="warn" (click)="user.withdrawInvitation(mr, true)">CANCEL</button>
+              </md-card-actions>
+            </md-card>
+
+          </div>
+        </div>
+        <div class="online-users">
+          <md-list>
+            <h3 style="text-align: center; margin-top: 20px; border-top: 2px solid lightblue; border-bottom: 2px solid lightblue">ALPHA Release</h3>
+            <button class="invite-button" md-raised-button color="accent" [disabled]="!canInvite()" (click)="invite()">Invite to play</button>
+            <br><br>
+            <h3 md-subheader>Online Players</h3>
+            <md-list-item class="user-list-item"
+                          *ngFor="let user of users.users$ | async | online | currentUser:user.user$key"
+                          *ngIf="user.available"
+                          [class.selected]="selectedUser === user"
+                          (click)="selectedUser = user">
+                <img md-list-avatar [src]="user.pic" alt="Image of {{user.displayName}}">
+                <h3 md-line>{{user.displayName}}</h3>
+                <span md-line>{{userStatus(user)}}</span>
+            </md-list-item>
+          </md-list>
+        </div>
+      </div>
+    </div>
+  </md-sidenav>
+  <md-card class="board-container">
+    <br>
+    <chess-board class="svg-chess-board" #board></chess-board>
+  </md-card>
+  <div>
+    <p style="text-align: center; margin-top: 0">First alpha release of online support, expect missing features, glitches and bugs!</p>
+    <p style="text-align: center; margin-top: 0">Restart should always help :), posting an GH issue is apperciated!</p>
+  </div>
+</md-sidenav-layout>
+

@@ -6,10 +6,11 @@ import {
   Piece,
   PieceType,
   ChessMove,
-  AIQuery
+  AIQuery,
+  util
 } from 'ng2-chess';
 
-import { ChessJSGame, util } from '../chessjs';
+import { ChessJSGame } from '../chessjs';
 const WEBWORKER_SUPPORTED = typeof(Worker) !== "undefined";
 
 /**
@@ -127,7 +128,7 @@ export class ChessJSGameAI extends ChessJSGame {
       .btime(q.black.time)
       .binc(q.black.inc)
       .$post()
-      .then( goRes => util.move.factoryLongAlg(goRes.bestMove.move) );
+      .then( goRes => util.move.fromLongAlgebraic(goRes.bestMove.move) );
   }
 
   /**

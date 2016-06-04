@@ -1,9 +1,9 @@
-import { Piece, Block, PieceColor, PieceType, MoveType, ChessMove } from '../../../../ng2-chess';
+import { PieceColor, PieceType, MoveType, ChessMove } from '../ng2-chess';
 const LONG_ALG_NOTATION_RE = /^([a-h]\d)([a-h]\d)([qkbn]?)$/;
 
 const color = {
   /**
-   * Map's a chess.js color type(w, b) to a PieceColor
+   * Map's a string color type(w, b) to a PieceColor
    * @param {string} color
    * @returns {PieceColor}
    */
@@ -18,7 +18,7 @@ const color = {
     }
   },
   /**
-   * Map's a PieceColor to a chess.js color type (w, b)
+   * Map's a PieceColor to a string color type (w, b)
    * @param {PieceColor} color
    * @returns {string}
    */
@@ -34,9 +34,10 @@ const color = {
   }
 };
 
+
 const piece = {
   /**
-   * Map's a chess.js piece type(p, b, n, r, q, k) to a PieceType
+   * Map's a string piece type(p, b, n, r, q, k) to a PieceType
    * @param {string} type
    * @returns {PieceType}
    */
@@ -59,7 +60,7 @@ const piece = {
     }
   },
   /**
-   * Map's a PieceType to a chess.js piece type(p, b, n, r, q, k)
+   * Map's a PieceType to a string piece type(p, b, n, r, q, k)
    * @param {PieceType} type
    * @returns {string}
    */
@@ -80,14 +81,7 @@ const piece = {
       default:
         return null;
     }
-  },
-  /**
-   * Creates a new piece instance from a chess.js Piece object
-   * @param block
-   * @param csPiece
-   */
-  factory: (block: Block, csPiece: Chess.Piece): Piece =>
-    new Piece(block, piece.from(csPiece.type), color.from(csPiece.color))
+  }
 };
 
 const move = {
@@ -147,36 +141,7 @@ const move = {
         return null;
     }
   },
-  /**
-   * Creates a new ChessMove instance from a chess.js move object
-   * NOTE: Does not populate the effected collection.
-   * @param orgMove
-   * @returns {ChessMove}
-   */
-  factory: (orgMove: Chess.ChessMove): ChessMove => {
-    const m = new ChessMove();
-
-    if (orgMove === null) {
-      m.invalid = true;
-    }
-    else {
-      m.piece = piece.from(orgMove.piece);
-      m.color = color.from(orgMove.color);
-      m.type = move.from(orgMove.flags);
-      m.from = orgMove.from;
-      m.to = orgMove.to;
-
-      if (orgMove.captured) {
-        m.captured = piece.from(orgMove.captured);
-      }
-
-      if (orgMove.promotion) {
-        m.promotion = piece.from(orgMove.promotion);
-      }
-    }
-    return m;
-  },
-  factoryLongAlg: (notation: string): ChessMove => {
+  fromLongAlgebraic: (notation: string): ChessMove => {
     const chessMove = new ChessMove();
     let move = LONG_ALG_NOTATION_RE.exec(notation);
 
@@ -192,7 +157,15 @@ const move = {
     }
 
     return chessMove;
+  },
+
+  toLongAlgebraic(chessMove: ChessMove): string {
+    return chessMove.from + chessMove.to + (piece.to(chessMove.promotion) || '');
   }
 };
 
-export const util = { color, piece, move };
+export const util = {
+  piece,
+  move,
+  color
+};

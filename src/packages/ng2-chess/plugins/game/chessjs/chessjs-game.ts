@@ -10,10 +10,11 @@ import {
   MoveType,
   ChessMove,
   GAME_STATE,
-  ChessEngine
+  ChessEngine,
+  util
 } from 'ng2-chess';
 
-import { util } from './index';
+import { chessjsUtil } from './index';
 
 
 function indexOfByBoard(piece: Piece, pArr: Piece[]): number {
@@ -55,6 +56,7 @@ export class ChessJSGame extends ChessEngine {
         return false;
     }
   }
+
 
   /**
    * Fired when the game state has changed, usually after a move.
@@ -109,7 +111,7 @@ export class ChessJSGame extends ChessEngine {
       return null;
     }
 
-    const move = util.move.factory(this.chess.move({
+    const move = chessjsUtil.move.factory(this.chess.move({
       from: piece.block.pos,
       to: toBlock.pos,
       promotion: util.piece.to(promotion)
@@ -126,10 +128,10 @@ export class ChessJSGame extends ChessEngine {
 
   undo(): ChessMove {
     if (this.state !== GAME_STATE.ACTIVE && this.state !== GAME_STATE.CHECK) {
-      return util.move.factory(null);
+      return chessjsUtil.move.factory(null);
     }
 
-    const move = util.move.factory(this.chess.undo());
+    const move = chessjsUtil.move.factory(this.chess.undo());
 
     if (!move.invalid) {
       const piece = this.getPiece(move.to),
@@ -375,7 +377,7 @@ export class ChessJSGame extends ChessEngine {
     this.blocks.forEach( block => {
       let csPiece: Chess.Piece;
       if (csPiece = this.chess.get(block.pos)) {
-        pieces.push(util.piece.factory(block, csPiece));
+        pieces.push(chessjsUtil.piece.factory(block, csPiece));
       }
     });
 

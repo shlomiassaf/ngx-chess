@@ -3,6 +3,8 @@ import { Block, Piece, PieceColor, PieceType, ChessMove, PlayerType, GAME_STATE,
 
 import { ChessEngine } from './ChessEngine';
 import { ChessBoard } from './ChessBoard';
+import { Observable } from "rxjs/Observable";
+import { Subject } from "rxjs/Subject";
 
 const DEFAULT_TIME = 144000; // 2.4 mins
 
@@ -13,6 +15,16 @@ export class ChessBoardController {
    */
   aiProcessing: boolean = false;
 
+  onMoved$: Observable<ChessMove>;
+  stateChanged$: Observable<GAME_STATE>;
+
+  get turn(): PieceColor {
+    return this.engine.turn();
+  }
+  get state(): GAME_STATE {
+    return this.engine.state;
+  }
+  
   get white(): PlayerSettings {
     return this.players[PieceColor.WHITE];
   };
@@ -30,11 +42,16 @@ export class ChessBoardController {
   }
 
   private depth: number;
+  private $onMoved$: Subject<ChessMove>;
 
   // the enum is the index;
   private players: PlayerSettings[] = [null, new PlayerSettings(), new PlayerSettings()];
 
-  constructor(protected board: ChessBoard, protected engine: ChessEngine) {}
+  constructor(protected board: ChessBoard, protected engine: ChessEngine) {
+    this.$onMoved$ = new Subject<ChessMove>();
+    this.onMoved$ = this.$onMoved$.asObservable();
+    this.stateChanged$ =  this.engine.stateChanged.asObservable();
+  }
 
   /**
    * Let the computer play for a side.
@@ -67,6 +84,14 @@ export class ChessBoardController {
     return this.board.newGame().then( () => this.engine.newGame())
   }
 
+  getPiece(pos: string): Piece {
+    return this.engine.getPiece(pos);
+  }
+
+  getBlock(pos: string): Block {
+    return this.engine.getBlock(pos);
+  }
+
   move(piece: Piece, toBlock: Block, promotion?: PieceType): Promise<ChessMove> {
     let isAI = this.currentPlayer.player === PlayerType.AI;
 
@@ -80,13 +105,15 @@ export class ChessBoardController {
 
     if (!move.invalid) {
       move.effected.filter( p => !!p.block).forEach( p => this.board.move(p) );
-    }
 
-    isAI = this.currentPlayer.player === PlayerType.AI;
+      this.$onMoved$.next(move);
 
-    // if it's computer turn, make him move.
-    if (this.engine.aiReady && isAI) {
-      setTimeout(() => this.doNextMove() , 0);
+      isAI = this.currentPlayer.player === PlayerType.AI;
+
+      // if it's computer turn, make him move.
+      if (this.engine.aiReady && isAI) {
+        setTimeout(() => this.doNextMove() , 0);
+      }
     }
 
     return Promise.resolve(move);
@@ -125,8 +152,9 @@ export class ChessBoardController {
 
   destroy(): void {
     this.engine.destroy();
+    this.$onMoved$.complete();
   }
-  
+
   private doNextMove(): Promise<void> {
     // TODO: Remove check for end game in next version, ChessBoardControlelr should get event on
     // state changed

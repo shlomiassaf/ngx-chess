@@ -13,6 +13,8 @@ import { ROUTER_PROVIDERS } from '@angular/router-deprecated';
 // TODO(gdi2290): replace with @angular2-material/all
 import { MATERIAL_PROVIDERS } from './angular2-material2';
 
+// Angular fire 2
+import { FIREBASE_PROVIDERS } from './firebase';
 /*
 * Application Providers/Directives/Pipes
 * providers/directives/pipes that only live in our browser environment
@@ -22,7 +24,8 @@ export const APPLICATION_PROVIDERS = [
   ...HTTP_PROVIDERS,
   ...MATERIAL_PROVIDERS,
   ...ROUTER_PROVIDERS,
-  {provide: LocationStrategy, useClass: HashLocationStrategy }
+  {provide: LocationStrategy, useClass: HashLocationStrategy },
+  ...FIREBASE_PROVIDERS
 ];
 
 export const PROVIDERS = [

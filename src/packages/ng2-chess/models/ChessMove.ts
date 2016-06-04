@@ -1,4 +1,4 @@
-import { Piece, PieceColor, PieceType, MoveType } from '../index';
+import { Piece, PieceColor, PieceType, MoveType, util } from '../index';
 
 export class ChessMove {
   piece: PieceType;
@@ -59,5 +59,9 @@ export class ChessMove {
         return true;
     }
     return false;
+  }
+
+  toLongAlgebraic(): string {
+    return util.move.toLongAlgebraic(this);
   }
 }

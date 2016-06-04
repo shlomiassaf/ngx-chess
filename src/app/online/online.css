@@ -4,7 +4,7 @@
 }
 
 .md-sidenav-side {
-  width: 250px;
+  width: 320px;
 }
 
 .settings-button {
@@ -18,38 +18,40 @@
   flex: 1;
 }
 
+.sidenav-spinner {
+  margin: auto;
+  margin-top: 20%;
+}
+
 .settings-container {
-  padding: 24px;
+  padding: 12px;
+}
 
+.user-list-item {
+  display: block;
+  cursor: pointer;
+}
+.user-list-item.selected  {
+  background-color: rgba(0, 150, 136, 0.35);
+}
+
+.invite-button {
+  width: 100%;
+}
+
+.invitation-container {
   display: flex;
-  flex-flow: row wrap;
-  align-items: stretch;
 
-  flex: 0 0 250px;
 }
-
-.settings-container > div {
-  flex: 1 100%;
+.invitation-container img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 10px;
 }
-
-.form-row {
-  margin: 15px 0;
+.invitation-actions {
+  text-align: center;
 }
-
-.config-section h3 {
-  border-bottom: 1px solid #009688;
-}
-
-.config-section {
-  margin-bottom: 50px;
-}
-
-.config-section:last-of-type {
-  border-top: 1px solid #009688;
-  border-bottom: 1px solid #009688;
-  margin-bottom: 0;
-}
-
 .board-container {
   flex: 5 0px;
 }

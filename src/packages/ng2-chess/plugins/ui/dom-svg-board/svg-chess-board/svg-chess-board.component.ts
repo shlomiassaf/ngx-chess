@@ -25,7 +25,7 @@ import {
   PieceColor,
   PieceType
 } from '../../../../../ng2-chess';
-import { SVGChessBlock, SVGChessPiece, SVGChessBanner, SVGChessHighlight } from '../index';
+import { SVGChessBlock, SVGChessPiece, SVG_BOARD_DIRECTIVES } from '../index';
 
 
 const log = 'development' === ENV ? (msg) => console.log(msg) : (msg) => {};
@@ -45,7 +45,7 @@ export interface PieceDragEvent {
   host: {
 
   },
-  directives: [ SVGChessBlock, SVGChessPiece, SVGChessBanner, SVGChessHighlight ],
+  directives: [ SVG_BOARD_DIRECTIVES ],
   styles: [ require('./svg-chess-board.styles.css') ],
   template: require('./svg-chess-board.template.html'),
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -336,6 +336,7 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
   }
 
   private dropPiece(mu) {
+    if (this.isDisabled) return;
     // TODO: Clicks outside SVG will still yield an even with coordinates relative to the parent
     // of the SVG, this might resolve to a valid block!
     // need to have 2 observables for document and for SVG element and merge them to one. (SVG should preventDefault)

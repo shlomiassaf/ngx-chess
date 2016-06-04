@@ -6,4 +6,4 @@ export { ChessMove } from './models/ChessMove';
 export { ChessBoard } from './tokens/ChessBoard';
 export { ChessEngine } from './tokens/ChessEngine';
 export { ChessBoardController } from './tokens/ChessBoardController';
-
+export { util } from './util';
