@@ -203,8 +203,8 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
 
       this.dragPiece.dragStart();
 
-      let lastX = md.offsetX;
-      let lastY = md.offsetY;
+      let lastX = md.pageX;
+      let lastY = md.pageY;
 
       // get all blocks that are a legal move for the current dragged piece
       // TODO: Move to Controller
@@ -216,19 +216,20 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
 
         let newScale = svgElement.currentScale,
           translation = svgElement.currentTranslate,
-          x = (mm.offsetX - translation.x) / newScale,
-          y = (mm.offsetY - translation.y) / newScale;
+          x = (mm.pageX - translation.x) / newScale,
+          y = (mm.pageY - translation.y) / newScale;
 
         let res =  {
           x: x - lastX,
           y: y - lastY
         };
 
-        lastX = mm.offsetX;
-        lastY = mm.offsetY;
+        lastX = mm.pageX;
+        lastY = mm.pageY;
 
         res.x *= viewPortRatioX;
         res.y *= viewPortRatioY;
+
         return res;
       }).takeUntil(mouseup); // stop moving when mouse is up
     });
@@ -338,12 +339,16 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
     // need to have 2 observables for document and for SVG element and merge them to one. (SVG should preventDefault)
     // the document observables should emit value that this function can identify then cancel the drop.
 
-    let x = mu.offsetX, y = mu.offsetY;
+
+    let x = mu.pageX, y = mu.pageY;
     if ( x === undefined || y === undefined ) {
-      const rect = this.boardElRef.nativeElement.getBoundingClientRect();
-      x = mu.changedTouches[0].pageX - rect.left;
-      y = mu.changedTouches[0].pageY - rect.top;
+      x = mu.changedTouches[0].pageX;
+      y = mu.changedTouches[0].pageY;
     }
+
+    const rect = this.boardElRef.nativeElement.getBoundingClientRect();
+    x -= rect.left;
+    y -= rect.top;
 
     const dropBlockIndex = BaseBlock.pointToIndex(x * this.ratioX, y * this.ratioY);
     const dropBlock = this.blocks.toArray()[dropBlockIndex];
