@@ -166,7 +166,8 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
    * @returns {number}
    */
   private get ratioX(): number {
-    return this.width / this.boardElRef.nativeElement.clientWidth;
+    const e = this.boardElRef.nativeElement;
+    return this.width / (e.clientWidth || e.parentNode.clientWidth);
   }
   /**
    * Returns the ratio between the current SVG width (Y) to the original width.
@@ -175,7 +176,8 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
    * @returns {number}
    */
   private get ratioY(): number {
-    return this.height / this.boardElRef.nativeElement.clientHeight;
+    const e = this.boardElRef.nativeElement;
+    return this.height / (e.clientHeight || e.parentNode.clientHeight);
   }
 
   private registerDragAndDrop() {
@@ -340,10 +342,10 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
     // the document observables should emit value that this function can identify then cancel the drop.
 
 
-    let x = mu.pageX, y = mu.pageY;
+    let x = mu.clientX, y = mu.clientY;
     if ( x === undefined || y === undefined ) {
-      x = mu.changedTouches[0].pageX;
-      y = mu.changedTouches[0].pageY;
+      x = mu.changedTouches[0].clientX;
+      y = mu.changedTouches[0].clientY;
     }
 
     const rect = this.boardElRef.nativeElement.getBoundingClientRect();
