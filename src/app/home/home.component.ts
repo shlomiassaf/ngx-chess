@@ -1,18 +1,15 @@
 import { Component, ViewChild, AfterViewInit } from '@angular/core';
 
-import { ChessBoard, ChessBoardController, PieceColor, PlayerType } from 'ng2-chess';
-import { DOM_SVG_KIT_DIRECTIVES } from 'ng2-chess/plugins/ui/dom-svg-board';
-import { CHESSJS_CHESS_GAME_PROVIDERS } from 'ng2-chess/plugins/game/chessjs';
+import { ChessBoard, PieceColor, PlayerType } from '../../ng2-chess';
+import { CHESSJS_CHESS_GAME_PROVIDERS } from '../../ng2-chess/plugins/game/chessjs';
 
 @Component({
   selector: 'home',
   providers: [ ...CHESSJS_CHESS_GAME_PROVIDERS ],
-  directives: [ ...DOM_SVG_KIT_DIRECTIVES ],
-  pipes: [ ],
-  styles: [ require('./home.css') ],
-  template: require('./home.html')
+  styleUrls: [ 'home.component.scss' ],
+  templateUrl: 'home.component.html'
 })
-export class Home implements AfterViewInit {
+export class HomeComponent implements AfterViewInit {
   
   @ViewChild('board') private board: ChessBoard;
 

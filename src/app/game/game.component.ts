@@ -1,10 +1,8 @@
 import { Component, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
-import { MdSidenav } from '@angular2-material/sidenav/sidenav';
-import { MdRadioChange } from '@angular2-material/radio/radio';
+import { MdSidenav, MdRadioChange } from '@angular/material';
 
-import { ChessBoard, ChessBoardController, PieceColor, PlayerType, BaseBlock } from 'ng2-chess';
-import { DOM_SVG_KIT_DIRECTIVES } from '../../packages/ng2-chess/plugins/ui/dom-svg-board';
-import { CHESSJS_AI_CHESS_GAME_PROVIDERS } from '../../packages/ng2-chess/plugins/game/chessjs-ai';
+import { ChessBoard, ChessBoardController, PieceColor, PlayerType } from '../../ng2-chess';
+import { CHESSJS_AI_CHESS_GAME_PROVIDERS } from '../../ng2-chess/plugins/game/chessjs-ai';
 
 class Player {
   get rawtype(): string {
@@ -21,12 +19,10 @@ class Player {
 @Component({
   selector: 'game',
   providers: [ ...CHESSJS_AI_CHESS_GAME_PROVIDERS ],
-  directives: [ ...DOM_SVG_KIT_DIRECTIVES ],
-  pipes: [ ],
-  styles: [ require('./game.css') ],
-  template: require('./game.html')
+  styleUrls: [ 'game.component.scss' ],
+  templateUrl: 'game.component.html'
 })
-export class Game implements AfterViewInit, OnDestroy {
+export class GameComponent implements AfterViewInit, OnDestroy {
   aiLevels = [1,2,3,4,5,6,7,8,9,10];
 
   black: Player = new Player(PieceColor.BLACK, PlayerType.AI, 9);
