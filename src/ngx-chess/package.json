@@ -1,0 +1,26 @@
+{
+  "name": "ngx-chess",
+  "description": "A plugin oriented chess component",
+  "version": "1.0.0",
+  "libConfig": {
+    "entry": "ngx-chess",
+    "inlineResources": true,
+    "libExtensions": [
+      {
+        "name": "dom-svg-board",
+        "dir": "plugins/dom-svg-board",
+        "entry": "dom-svg-board.ts"
+      },
+      {
+        "name": "chessjs",
+        "dir": "plugins/chessjs",
+        "entry": "chessjs.ts"
+      },
+      {
+        "name": "chessjs-ai",
+        "dir": "plugins/chessjs-ai",
+        "entry": "chessjs-ai.ts"
+      }
+    ]
+  }
+}

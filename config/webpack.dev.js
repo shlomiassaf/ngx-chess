@@ -21,12 +21,10 @@ const LoaderOptionsPlugin = require('webpack/lib/LoaderOptionsPlugin');
 const ENV = process.env.ENV = process.env.NODE_ENV = 'development';
 const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 3000;
-const PUBLIC = process.env.PUBLIC_DEV || undefined;
 const HMR = helpers.hasProcessFlag('hot');
 const METADATA = webpackMerge(commonConfig({env: ENV}).metadata, {
   host: HOST,
   port: PORT,
-  public: PUBLIC,
   ENV: ENV,
   HMR: HMR
 });
@@ -40,7 +38,7 @@ const METADATA = webpackMerge(commonConfig({env: ENV}).metadata, {
  * See: http://webpack.github.io/docs/configuration.html#cli
  */
 module.exports = function (options) {
-  return webpackMerge(commonConfig({env: ENV}), {
+  return webpackMerge(commonConfig(Object.assign(options || {}, {env: ENV})), {
 
     /**
      * Developer tool to enhance debugging
@@ -103,7 +101,7 @@ module.exports = function (options) {
         {
           test: /\.css$/,
           use: ['style-loader', 'css-loader'],
-          include: [helpers.root('src', 'styles')]
+          include: [helpers.root('src', 'demo', 'styles')]
         },
 
         /**
@@ -114,7 +112,7 @@ module.exports = function (options) {
         {
           test: /\.scss$/,
           use: ['style-loader', 'css-loader', 'sass-loader'],
-          include: [helpers.root('src', 'styles')]
+          include: [helpers.root('src', 'demo', 'styles')]
         },
 
       ]
@@ -135,6 +133,8 @@ module.exports = function (options) {
        * NOTE: when adding more properties, make sure you include them in custom-typings.d.ts
        */
       new DefinePlugin({
+        "VERSION": JSON.stringify(require(helpers.root('package.json')).version),
+        "NG_VERSION": JSON.stringify(require(helpers.root('node_modules', '@angular', 'core', 'package.json')).version),
         'ENV': JSON.stringify(METADATA.ENV),
         'HMR': METADATA.HMR,
         'process.env': {
@@ -222,7 +222,6 @@ module.exports = function (options) {
     devServer: {
       port: METADATA.port,
       host: METADATA.host,
-      public: METADATA.public,
       historyApiFallback: true,
       watchOptions: {
         // if you're using Docker you may need this

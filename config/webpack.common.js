@@ -1,9 +1,13 @@
 /**
  * @author: @AngularClass
  */
-
+const fs = require('fs');
+const Path = require('path');
 const webpack = require('webpack');
 const helpers = require('./helpers');
+const del = require('del');
+
+require('ts-node/register');
 
 /**
  * Webpack Plugins
@@ -16,6 +20,7 @@ const ContextReplacementPlugin = require('webpack/lib/ContextReplacementPlugin')
 const CommonsChunkPlugin = require('webpack/lib/optimize/CommonsChunkPlugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const CheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
+const TsConfigPathsPlugin = require('awesome-typescript-loader').TsConfigPathsPlugin;
 const HtmlElementsPlugin = require('./html-elements-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const InlineManifestWebpackPlugin = require('inline-manifest-webpack-plugin');
@@ -24,13 +29,15 @@ const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const ngcWebpack = require('ngc-webpack');
 //const PreloadWebpackPlugin = require('preload-webpack-plugin');
 
-/**
+const util = require('../scripts/util.ts');
+
+/*
  * Webpack Constants
  */
 const HMR = helpers.hasProcessFlag('hot');
 const AOT = process.env.BUILD_AOT || helpers.hasNpmFlag('aot');
 const METADATA = {
-  title: 'Angular2 Webpack Starter by @gdi2290 from @AngularClass',
+  title: 'ngx-chess',
   baseUrl: '/',
   isDevServer: helpers.isWebpackDevServer(),
   HMR: HMR
@@ -42,8 +49,9 @@ const METADATA = {
  * See: http://webpack.github.io/docs/configuration.html#cli
  */
 module.exports = function (options) {
-  isProd = options.env === 'production';
-  return {
+  const isProd = options.env === 'production';
+
+  const webpackConfig = {
 
     /**
      * Cache generated modules and chunks to improve performance for multiple incremental builds.
@@ -62,9 +70,9 @@ module.exports = function (options) {
      */
     entry: {
 
-      'polyfills': './src/polyfills.browser.ts',
-      'main':      AOT ? './src/main.browser.aot.ts' :
-                  './src/main.browser.ts'
+      'polyfills': './src/demo/polyfills.browser.ts',
+      'main':      AOT ? './src/demo/main.browser.aot.ts' :
+                  './src/demo/main.browser.ts'
 
     },
 
@@ -87,6 +95,10 @@ module.exports = function (options) {
        */
       modules: [helpers.root('src'), helpers.root('node_modules')],
 
+      /**
+       * Aliasing the libraries for webpack, the alias points to the source code.
+       */
+      alias: util.webpackAlias()
     },
 
     /**
@@ -136,13 +148,8 @@ module.exports = function (options) {
               loader: 'awesome-typescript-loader',
               options: {
                 configFileName: 'tsconfig.webpack.json',
-                useCache: !isProd
-              }
-            },
-            {
-              loader: 'ngc-webpack',
-              options: {
-                disable: !AOT,
+                useCache: !isProd,
+                baseUrl: './src' // for some reason, ATL won't behave when baseUrl is taken from the base tsconfig (via extends), so we set it hard
               }
             },
             {
@@ -153,6 +160,16 @@ module.exports = function (options) {
         },
 
         /**
+         * Json loader support for *.json files.
+         *
+         * See: https://github.com/webpack/json-loader
+         */
+        {
+          test: /\.json$/,
+          use: 'json-loader'
+        },
+
+        /**
          * To string and css loader support for *.css files (from Angular components)
          * Returns file content as string
          *
@@ -160,7 +177,7 @@ module.exports = function (options) {
         {
           test: /\.css$/,
           use: ['to-string-loader', 'css-loader'],
-          exclude: [helpers.root('src', 'styles')]
+          exclude: [helpers.root('src', 'demo', 'styles')]
         },
 
         /**
@@ -171,7 +188,7 @@ module.exports = function (options) {
         {
           test: /\.scss$/,
           use: ['to-string-loader', 'css-loader', 'sass-loader'],
-          exclude: [helpers.root('src', 'styles')]
+          exclude: [helpers.root('src', 'demo', 'styles')]
         },
 
         /**
@@ -183,7 +200,7 @@ module.exports = function (options) {
         {
           test: /\.html$/,
           use: 'raw-loader',
-          exclude: [helpers.root('src/index.html')]
+          exclude: [helpers.root('src', 'demo', 'index.html')]
         },
 
         /**
@@ -220,12 +237,15 @@ module.exports = function (options) {
 
       /**
        * Plugin: ForkCheckerPlugin
-       * Description: Do type checking in a separate process, so webpack doesn't need to wait.
+       * Description: Do type checking in a separate process, so webpack don't need to wait.
        *
        * See: https://github.com/s-panferov/awesome-typescript-loader#forkchecker-boolean-defaultfalse
        */
       new CheckerPlugin(),
-      /**
+
+      new TsConfigPathsPlugin(),
+
+      /*
        * Plugin: CommonsChunkPlugin
        * Description: Shares common code between the pages.
        * It identifies common modules and put them into a commons chunk.
@@ -240,17 +260,17 @@ module.exports = function (options) {
       /**
        * This enables tree shaking of the vendor modules
        */
-      // new CommonsChunkPlugin({
-      //   name: 'vendor',
-      //   chunks: ['main'],
-      //   minChunks: module => /node_modules/.test(module.resource)
-      // }),
+      new CommonsChunkPlugin({
+        name: 'vendor',
+        chunks: ['main'],
+        minChunks: module => /node_modules/.test(module.resource)
+      }),
       /**
        * Specify the correct order the scripts will be injected in
        */
-      // new CommonsChunkPlugin({
-      //   name: ['polyfills', 'vendor'].reverse()
-      // }),
+      new CommonsChunkPlugin({
+        name: ['polyfills', 'vendor'].reverse()
+      }),
       // new CommonsChunkPlugin({
       //   name: ['manifest'],
       //   minChunks: Infinity,
@@ -285,8 +305,8 @@ module.exports = function (options) {
        * See: https://www.npmjs.com/package/copy-webpack-plugin
        */
       new CopyWebpackPlugin([
-        { from: 'src/assets', to: 'assets' },
-        { from: 'src/meta'}
+        { from: 'src/demo/assets', to: 'assets' },
+        { from: 'src/demo/meta'}
       ],
         isProd ? { ignore: [ 'mock-data/**/*' ] } : undefined
       ),
@@ -310,6 +330,20 @@ module.exports = function (options) {
       //  include: 'asyncChunks'
       //}),
 
+      /**
+       * Plugin: ScriptExtHtmlWebpackPlugin
+       * Description: Enhances html-webpack-plugin functionality
+       * with different deployment options for your scripts including:
+       *
+       * See: https://github.com/numical/script-ext-html-webpack-plugin
+       */
+      new ScriptExtHtmlWebpackPlugin({
+        sync: /polyfill|vendor/,
+        defaultAttribute: 'async',
+        preload: [/polyfill|vendor|main/],
+        prefetch: [/chunk/]
+      }),
+
       /*
       * Plugin: HtmlWebpackPlugin
       * Description: Simplifies creation of HTML files to serve your webpack bundles.
@@ -319,25 +353,11 @@ module.exports = function (options) {
       * See: https://github.com/ampedandwired/html-webpack-plugin
       */
       new HtmlWebpackPlugin({
-        template: 'src/index.html',
+        template: 'src/demo/index.html',
         title: METADATA.title,
         chunksSortMode: 'dependency',
         metadata: METADATA,
         inject: 'body'
-      }),
-      
-       /**
-       * Plugin: ScriptExtHtmlWebpackPlugin
-       * Description: Enhances html-webpack-plugin functionality
-       * with different deployment options for your scripts including:
-       *
-       * See: https://github.com/numical/script-ext-html-webpack-plugin
-       */
-      new ScriptExtHtmlWebpackPlugin({
-        sync: /polyfills|vendor/,
-        defaultAttribute: 'async',
-        preload: [/polyfills|vendor|main/],
-        prefetch: [/chunk/]
       }),
 
       /**
@@ -383,6 +403,29 @@ module.exports = function (options) {
          */
         disabled: !AOT,
         tsConfig: helpers.root('tsconfig.webpack.json'),
+        /**
+         * A path to a file (resource) that will replace all resource referenced in @Components.
+         * For each `@Component` the AOT compiler compiles it creates new representation for the templates (html, styles)
+         * of that `@Components`. It means that there is no need for the source templates, they take a lot of
+         * space and they will be replaced by the content of this resource.
+         *
+         * To leave the template as is set to a falsy value (the default).
+         *
+         * TIP: Use an empty file as an overriding resource. It is recommended to use a ".js" file which
+         * usually has small amount of loaders hence less performance impact.
+         *
+         * > This feature is doing NormalModuleReplacementPlugin for AOT compiled resources.
+         *
+         * ### resourceOverride and assets
+         * If you reference assets in your styles/html that are not inlined and you expect a loader (e.g. url-loader)
+         * to copy them, don't use the `resourceOverride` feature as it does not support this feature at the moment.
+         * With `resourceOverride` the end result is that webpack will replace the asset with an href to the public
+         * assets folder but it will not copy the files. This happens because the replacement is done in the AOT compilation
+         * phase but in the bundling it won't happen (it's being replaced with and empty file...)
+         *
+         * @default undefined
+         */
+        resourceOverride: helpers.root('config/resource-override.js')
       }),
 
       /**
@@ -410,4 +453,27 @@ module.exports = function (options) {
     }
 
   };
-}
+
+  if (options.hasOwnProperty('sim')) {
+    /**
+     * In "Simulation mode" the libraries are consumed from a compiled and built version.
+     *
+     * Simulation mode assumes that the libraries (or library) are built into "dist_package" (via "gulp build").
+     * It will redirect all requests for the library into the compiled version.
+     *
+     * This is for both processes (AOT compiler, webpack).
+     *
+     * Simulation mode make the built library version appear like its inside "node_modules" and cancel
+     * all references to the source code of the library, this is a great tool for testing the library
+     * before publishing but without the need for npm link and other crazy things so webpack and AOT
+     * will consume the right thing.
+     */
+    console.log('\n==============================================================================');
+    console.log('  LIBRARY RUNNING IN SIMULATION MODE - WEBPACK WILL USE THE COMPILED LIBRARY');
+    console.log('==============================================================================\n');
+
+    util.applySimulation(webpackConfig, isProd);
+  }
+
+  return webpackConfig;
+};

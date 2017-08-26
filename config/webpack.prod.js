@@ -40,10 +40,8 @@ const METADATA = webpackMerge(commonConfig({
   HMR: false
 });
 
-module.exports = function (env) {
-  return webpackMerge(commonConfig({
-    env: ENV
-  }), {
+module.exports = function (options) {
+  return webpackMerge(commonConfig(Object.assign(options || {}, {env: ENV})), {
 
     /**
      * Developer tool to enhance debugging
@@ -106,7 +104,7 @@ module.exports = function (env) {
             fallback: 'style-loader',
             use: 'css-loader'
           }),
-          include: [helpers.root('src', 'styles')]
+          include: [helpers.root('src', 'demo', 'styles')]
         },
 
         /**
@@ -118,7 +116,7 @@ module.exports = function (env) {
             fallback: 'style-loader',
             use: 'css-loader!sass-loader'
           }),
-          include: [helpers.root('src', 'styles')]
+          include: [helpers.root('src', 'demo', 'styles')]
         },
 
       ]
@@ -161,6 +159,8 @@ module.exports = function (env) {
        */
       // NOTE: when adding more properties make sure you include them in custom-typings.d.ts
       new DefinePlugin({
+        "VERSION": JSON.stringify(require(helpers.root('package.json')).version),
+        "NG_VERSION": JSON.stringify(require(helpers.root('node_modules', '@angular', 'core', 'package.json')).version),
         'ENV': JSON.stringify(METADATA.ENV),
         'HMR': METADATA.HMR,
         'process.env': {

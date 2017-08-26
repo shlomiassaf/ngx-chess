@@ -33,7 +33,6 @@ exports.config = {
   capabilities: {
     'browserName': 'chrome',
     'chromeOptions': {
-      //'args': ["--headless", "--disable-gpu", "--window-size=1280x800",  "--no-sandbox"]
       'args': ['show-fps-counter=true']
     }
   },

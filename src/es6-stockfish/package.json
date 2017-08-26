@@ -1,0 +1,13 @@
+{
+  "name": "es6-stockfish",
+  "description": "ES6 wrappers for stockfish",
+  "version": "1.0.0",
+  "libConfig": {
+    "entry": "es6-stockfish"
+  },
+  "browser": {
+    "fs": false,
+    "ws": false,
+    "readline": false
+  }
+}

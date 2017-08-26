@@ -1,0 +1,14 @@
+{
+  "name": "dom-svg-board",
+  "description": "dom-svg-board",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "ngx-chess": "^0.0.1",
+    "es6-stockfish": "^1.0.0"
+  },
+  "browser": {
+    "fs": false,
+    "ws": false,
+    "readline": false
+  }
+}

@@ -70,3 +70,7 @@ dll/
 *.css.shim.ts
 *.ngsummary.json
 *.shim.ngstyle.ts
+
+dist_package
+.tmp
+.tsconfig.*.json

@@ -1,14 +1,14 @@
-# Angular 2 Chess
+# Angular Chess
+
+**Runs on `angular@4.3.x`**
 
 A plugin oriented chess component.  
-
-> Angular 2 Chess is in early stages - Still alpha.
-> I'v built it in 4 days as a learning experiment that gone wild :)
 
 ## Architecture
 The module is actually a shell with plugins.  
 The shell provides contracts and some building block for the plugins.  
-The logic behind a plugin system is that there are different types of chess games. Also, there are already multiple chess implementation's out there, a plugin can wrap an implementation and save a lot of work.  
+The logic behind a plugin system is that there are different types of chess games.
+Also, there are already multiple chess implementation's out there, a plugin can wrap an implementation and save a lot of work.
 
 This approach enables endless game variants.  
 It can be games with different rules (engines), or games with different UI (3D, native, different pieces, etc...)  
@@ -63,15 +63,3 @@ A controller has 2 responsibilities:
 Currently controllers are not really plugins, they are intended as such.
 
 
-
-## TODOs:
- 
- * Integration with FireBase (for P2P play, save, etc...)
- * Promotion popup (currently defaults to Queen) 
- * More boards / engines?
- * Change DI, board will get controller when new game is set (controller will hold engine via DI)?
- * NPM Publish script + publish
- * ~~Next move hint~~
- * ~~Undo~~
- * ~~Move to **Web Worker**, classic web worker use case~~ (native, none angular)
- * ~~Lazy load the Chessjs-AI plugin~~ (done with webpack)

@@ -60,7 +60,7 @@ module.exports = function (options) {
      * See: http://webpack.github.io/docs/configuration.html#module
      *
      * 'use:' revered back to 'loader:' as a temp. workaround for #1188
-     * See: https://github.com/AngularClass/angular-starter/issues/1188#issuecomment-262872034
+     * See: https://github.com/AngularClass/angular2-webpack-starter/issues/1188#issuecomment-262872034
      */
     module: {
 
@@ -118,6 +118,17 @@ module.exports = function (options) {
         },
 
         /**
+         * Json loader support for *.json files.
+         *
+         * See: https://github.com/webpack/json-loader
+         */
+        {
+          test: /\.json$/,
+          loader: 'json-loader',
+          exclude: [helpers.root('src/demo/index.html')]
+        },
+
+        /**
          * Raw loader support for *.css files
          * Returns file content as string
          *
@@ -126,7 +137,7 @@ module.exports = function (options) {
         {
           test: /\.css$/,
           loader: ['to-string-loader', 'css-loader'],
-          exclude: [helpers.root('src/index.html')]
+          exclude: [helpers.root('src/demo/index.html')]
         },
 
         /**
@@ -137,7 +148,7 @@ module.exports = function (options) {
         {
             test: /\.scss$/,
             loader: ['raw-loader', 'sass-loader'],
-            exclude: [helpers.root('src/index.html')]
+            exclude: [helpers.root('src/demo/index.html')]
         },
 
         /**
@@ -149,7 +160,7 @@ module.exports = function (options) {
         {
           test: /\.html$/,
           loader: 'raw-loader',
-          exclude: [helpers.root('src/index.html')]
+          exclude: [helpers.root('src/demo/index.html')]
         },
 
         /**

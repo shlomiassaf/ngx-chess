@@ -14,7 +14,7 @@ const isDev = env.indexOf('dev') === 0;
 process.env.npm_lifecycle_event = flags.join(':');
 process.env.NODE_ENV = env;
 
-const webpackConfig = require('./config/webpack.prod')({env: env});
+const webpackConfig = require('./config/webpack.prod')({env: env, sim: true});
 
 if (isDev) {
   webpackConfig.plugins.unshift(new webpack.HotModuleReplacementPlugin());
