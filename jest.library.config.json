@@ -1,0 +1,41 @@
+{
+  "setupTestFrameworkScriptFile": "<rootDir>/config/setup-jest.ts",
+  "globals": {
+    "__TS_CONFIG__": "tsconfig.spec.json",
+    "__TRANSFORM_HTML__": true
+  },
+  "transform": {
+    "^.+\\.(ts|js|html)$": "<rootDir>/node_modules/jest-preset-angular/preprocessor.js"
+  },
+  "testRegex": "src\\/(?!demo).+\\/.+\\.spec\\.ts$",
+  "moduleFileExtensions": [
+    "ts",
+    "js",
+    "html",
+    "json"
+  ],
+  "mapCoverage": true,
+  "moduleDirectories": [
+    "node_modules",
+    "src"
+  ],
+  "testPathIgnorePatterns": [
+    "/node_modules/"
+  ],
+  "transformIgnorePatterns": [
+    "node_modules/(?!@ngrx)"
+  ],
+  "moduleNameMapper": {
+    "^es6-stockfish$": "<rootDir>/src/es6-stockfish/src/es6-stockfish.ts",
+    "^es6-stockfish/src/(.*)": "<rootDir>/src/es6-stockfish/src/$1",
+    "^ngx-chess$": "<rootDir>/src/ngx-chess/src/ngx-chess.ts",
+    "^ngx-chess/src/(.*)": "<rootDir>/src/ngx-chess/src/$1",
+    "^ngx-chess/plugins/dom-svg-board$": "<rootDir>/src/ngx-chess/plugins/dom-svg-board/src/dom-svg-board.ts",
+    "^ngx-chess/plugins/dom-svg-board/src/(.*)": "<rootDir>/src/ngx-chess/plugins/dom-svg-board/src/$1",
+    "^ngx-chess/plugins/chessjs$": "<rootDir>/src/ngx-chess/plugins/chessjs/src/chessjs.ts",
+    "^ngx-chess/plugins/chessjs/src/(.*)": "<rootDir>/src/ngx-chess/plugins/chessjs/src/$1",
+    "^ngx-chess/plugins/chessjs-ai$": "<rootDir>/src/ngx-chess/plugins/chessjs-ai/src/chessjs-ai.ts",
+    "^ngx-chess/plugins/chessjs-ai/src/(.*)": "<rootDir>/src/ngx-chess/plugins/chessjs-ai/src/$1",
+    "(.*)": "<rootDir>/src/$1"
+  }
+}

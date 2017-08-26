@@ -2,19 +2,72 @@
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
-    "emitDecoratorMetadata": true,
+    "moduleResolution": "node",
     "experimentalDecorators": true,
-    "sourceMap": true,
-    "noEmitHelpers": true
+    "emitDecoratorMetadata": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": [
+      "es2015",
+      "dom"
+    ],
+    "types": [
+      "jasmine",
+      "hammerjs",
+      "node",
+      "source-map",
+      "uglify-js",
+      "webpack"
+    ],
+    "noEmit": true,
+    "baseUrl": "./src",
+    "paths": {
+      "es6-stockfish": [
+        "es6-stockfish/src/es6-stockfish.ts"
+      ],
+      "es6-stockfish/src/*": [
+        "es6-stockfish/src/*"
+      ],
+      "ngx-chess": [
+        "ngx-chess/src/ngx-chess.ts"
+      ],
+      "ngx-chess/plugins/dom-svg-board": [
+        "ngx-chess/plugins/dom-svg-board/src/dom-svg-board.ts"
+      ],
+      "ngx-chess/plugins/dom-svg-board/src/*": [
+        "ngx-chess/plugins/dom-svg-board/src/*"
+      ],
+      "ngx-chess/plugins/chessjs": [
+        "ngx-chess/plugins/chessjs/src/chessjs.ts"
+      ],
+      "ngx-chess/plugins/chessjs/src/*": [
+        "ngx-chess/plugins/chessjs/src/*"
+      ],
+      "ngx-chess/plugins/chessjs-ai": [
+        "ngx-chess/plugins/chessjs-ai/src/chessjs-ai.ts"
+      ],
+      "ngx-chess/plugins/chessjs-ai/src/*": [
+        "ngx-chess/plugins/chessjs-ai/src/*"
+      ],
+      "ngx-chess/src/*": [
+        "ngx-chess/src/*"
+      ]
+    }
   },
   "exclude": [
-    "node_modules"
+    "scripts/**/*.ts",
+    "node_modules",
+    "dist",
+    "dist_package",
+    "e2e",
+    "src/**/*.spec.ts"
   ],
   "awesomeTypescriptLoaderOptions": {
-    "resolveGlobs": true,
-    "forkChecker": true
+    "forkChecker": true,
+    "useWebpackText": true
   },
   "compileOnSave": false,
   "buildOnSave": false,
-  "atom": { "rewriteTsconfig": false }
+  "atom": {
+    "rewriteTsconfig": false
+  }
 }

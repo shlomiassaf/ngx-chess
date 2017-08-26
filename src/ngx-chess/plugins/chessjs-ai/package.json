@@ -1,0 +1,14 @@
+{
+  "name": "chessjs-stockfish",
+  "description": "ng-chess AI engine plugin using chess.js and and stockfish",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "ng2-chess/chessjs": "^0.0.1",
+    "es6-stockfish": "^1.0.0"
+  },
+  "browser": {
+    "fs": false,
+    "ws": false,
+    "readline": false
+  }
+}

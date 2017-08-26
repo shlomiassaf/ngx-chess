@@ -1,0 +1,42 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "target": "es5",
+    "module": "es2015",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowSyntheticDefaultImports": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "inlineSources": true,
+    "strictNullChecks": false,
+    "noEmit": false,
+    "declaration": false,
+    "outDir": "./dist"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "scripts/**/*",
+    "node_modules",
+    "dist",
+    "dist_package",
+    "e2e",
+    "src/**/*.spec.ts"
+  ],
+  "awesomeTypescriptLoaderOptions": {
+    "forkChecker": true,
+    "useWebpackText": true
+  },
+  "angularCompilerOptions": {
+    "genDir": "./compiled",
+    "skipMetadataEmit": true
+  },
+  "compileOnSave": false,
+  "buildOnSave": false,
+  "atom": {
+    "rewriteTsconfig": false
+  }
+}

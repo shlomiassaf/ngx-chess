@@ -1,0 +1,13 @@
+{
+  "name": "chessjs",
+  "description": "ng-chess engine plugin using chess.js",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "chess.js": "^0.9.4"
+  },
+  "browser": {
+    "fs": false,
+    "ws": false,
+    "readline": false
+  }
+}
