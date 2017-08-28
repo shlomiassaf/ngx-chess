@@ -20,8 +20,10 @@ import { AppState } from './app.service';
 
                   <md-progress-bar mode="indeterminate" color="primary" *ngIf="loading"></md-progress-bar>  
               </div>
-              <div fxFlex>
-                  <router-outlet></router-outlet>
+              <div fxFlex style="position: relative">
+                  <div class="absolute-max">
+                      <router-outlet></router-outlet>
+                  </div>
               </div>
           </div>
       </main>`

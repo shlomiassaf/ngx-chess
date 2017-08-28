@@ -48,16 +48,18 @@
       <ng-container *ngTemplateOutlet="playerGui; context: {'$implicit': black}"></ng-container>
     </div>
   </div>
-  <div fxFlex fxFill style="overflow-y: hidden">
-    <div class="board-container">
-      <chess-board class="svg-chess-board" #board (onBoardResize)="onBoardResize($event)">
-        <div fxFlexFill fxLayout="column" fxLayoutAlign="start end" class="board-content-left">
-          <ng-container *ngTemplateOutlet="playerGui; context: {'$implicit': black}"></ng-container>
-        </div>
-        <div fxFlexFill fxLayout="column-reverse" fxLayoutAlign="start start" class="board-content-right">
-          <ng-container *ngTemplateOutlet="playerGui; context: {'$implicit': white}"></ng-container>
-        </div>
-      </chess-board>
+  <div fxFlex style="overflow-y: hidden; position: relative">
+    <div class="absolute-max">
+      <div class="board-container">
+        <chess-board class="svg-chess-board" #board (onBoardResize)="onBoardResize($event)">
+          <div fxFlexFill fxLayout="column" fxLayoutAlign="start end" class="board-content-left">
+            <ng-container *ngTemplateOutlet="playerGui; context: {'$implicit': black}"></ng-container>
+          </div>
+          <div fxFlexFill fxLayout="column-reverse" fxLayoutAlign="start start" class="board-content-right">
+            <ng-container *ngTemplateOutlet="playerGui; context: {'$implicit': white}"></ng-container>
+          </div>
+        </chess-board>
+      </div>
     </div>
   </div>
   <div fxFlex="nogrow" fxLayout="row" fxLayoutAlign="space-between center">
