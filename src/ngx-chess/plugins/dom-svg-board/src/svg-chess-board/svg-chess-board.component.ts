@@ -1,12 +1,18 @@
 import {
+  AfterContentInit,
+  AfterViewInit,
   Component,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  EventEmitter,
   ViewChild,
   ViewChildren,
+  Output,
+  Optional,
   QueryList,
   ElementRef,
-  OnDestroy
+  OnDestroy,
+  NgZone
 } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
@@ -26,7 +32,9 @@ import {
   Piece,
   GAME_STATE,
   PieceColor,
-  PieceType
+  PieceType,
+  BoardDialogService,
+  BoardDialogMessage
 } from 'ngx-chess';
 
 import { SVGChessBlock } from '../svg-chess-block/svg-chess-block.component';
@@ -46,13 +54,23 @@ export interface PieceDragEvent {
   event: MouseEvent
 }
 
+export interface BoardSizeChangeEvent {
+  height: number;
+  width: number;
+  clientHeight: number;
+  clientWidth: number;
+  xOffset: number;
+  yOffset: number;
+}
+
+
 @Component({
   selector: 'chess-board',
   styleUrls: [ 'svg-chess-board.styles.scss' ],
   templateUrl: 'svg-chess-board.template.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SVGChessBoard extends ChessBoard implements OnDestroy {
+export class SVGChessBoard extends ChessBoard implements AfterViewInit, AfterContentInit, OnDestroy {
 
   blockSize: number;
   dragPiece: SVGChessPiece;
@@ -66,49 +84,102 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
   /** @internal */
   isBusy: boolean;
   /** @internal */
-  banner: { title: string, message: string };
+  banner: BoardDialogMessage;
   /** @internal */
   highlighted: Block[];
+  /** @internal */
+  lastSizeEvent: BoardSizeChangeEvent;
+
+  get isPortrait(): boolean {
+    return this._isPortrait;
+  }
 
   private isDisabled: boolean;
   private rxWaste: Subscription[] = [];
+  private onWindowResize: any;
+  private _isPortrait: boolean;
 
   @ViewChild('board') private boardElRef: ElementRef;
   @ViewChildren(SVGChessBlock) private blocks: QueryList<SVGChessBlock>;
   @ViewChildren(SVGChessPiece) private pieces: QueryList<SVGChessPiece>;
+  @Output() onBoardResize = new EventEmitter<BoardSizeChangeEvent>();
 
-
-  constructor(public engine: ChessEngine, private cdr: ChangeDetectorRef) {
+  constructor(public engine: ChessEngine,
+              private cdr: ChangeDetectorRef,
+              private zone: NgZone,
+              @Optional() private boardDialogService?: BoardDialogService) {
     super(ChessBoardController, engine);
     Object.defineProperty(this, 'height', {value: 600});
     Object.defineProperty(this, 'width', {value: 600});
     Object.defineProperty(this, 'viewBox', {value: `0 0 ${this.width} ${this.height}`});
     this.blockSize = this.height / engine.rowCount;
+
+    if (window) {
+      this.onWindowResize = (event$: any) => {
+        const oldIsPortrait = this._isPortrait;
+        this._isPortrait = window.innerHeight > window.innerWidth;
+        this.updateLastSizeEvent();
+        this.onBoardResize.emit(this.lastSizeEvent);
+
+        // on mobile, moving to landscape from portrait require another calc/redraw
+        // 2nd time with proper board size
+        if (oldIsPortrait === true && this._isPortrait === false) {
+          setTimeout(() => this.onWindowResize(), 16);
+        }
+      };
+      window.addEventListener("resize", this.onWindowResize);
+    }
+  }
+
+  ngAfterViewInit(): void {
+    this.updateLastSizeEvent();
+
+    // engine.destroy should clean these up.
+    this.engine.boardSynced.subscribe( () => this.syncPiecesToBlocks() );
+    this.engine.stateChanged.subscribe(newState => this.onStateChanged(newState) );
+
+    this.registerDragAndDrop();
+  }
+
+  ngAfterContentInit(): void {
+    const u = this.zone.onStable.subscribe( () => {
+      this.onWindowResize(null);
+      u.unsubscribe();
+    });
   }
 
   onStateChanged(newState: GAME_STATE): void {
-    switch (newState) {
-      case GAME_STATE.DRAW:
-      case GAME_STATE.STALEMATE:
-      case GAME_STATE.THREEFOLD_REPETITION:
-      case GAME_STATE.INSUFFICIENT_MATERIAL:
-        this.banner = {
-          title: "GAME OVER",
-          message: "It's a draw!"
-        };
-        this.clearSubscriptions();
-        break;
-      case GAME_STATE.CHECKMATE:
-        const winner = this.engine.winner() === PieceColor.BLACK ? 'Black' : 'White';
-        this.banner = {
-          title: "GAME OVER",
-          message: `${winner} wins!`
-        };
-        this.clearSubscriptions();
-        break;
+    let banner: BoardDialogMessage;
+
+    if (this.ctrl.isGameOver(newState)) {
+      const winner = this.ctrl.winner === PieceColor.BLACK ? 'Black' : 'White';
+      banner = newState === GAME_STATE.CHECKMATE
+        ? { title: "GAME OVER", message: `${winner} wins!` }
+        : { title: "GAME OVER", message: `It's a draw!` }
+      ;
     }
 
-    this.cdr.markForCheck();
+    if (banner) {
+      if (this.boardDialogService) {
+        const boundingRect = this.boardElRef.nativeElement.getBoundingClientRect();
+        const s = this.lastSizeEvent;
+
+        const rect: ClientRect = {
+          bottom: boundingRect.top + s.clientHeight + s.yOffset,
+          height: s.clientHeight,
+          left: boundingRect.left + s.xOffset,
+          right: boundingRect.left + s.clientWidth + s.xOffset,
+          top: boundingRect.top + s.yOffset,
+          width: s.clientWidth
+        };
+
+        this.boardDialogService.showMessage(banner, rect);
+      } else {
+        this.banner = banner;
+        this.cdr.markForCheck();
+      }
+    }
+
     log('STATE CHANGE: ' + GAME_STATE[newState]);
   }
 
@@ -118,19 +189,16 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
 
   ngOnDestroy() {
    this.clearSubscriptions();
+   if (this.onWindowResize) {
+     window.removeEventListener("resize", this.onWindowResize);
+   }
   }
 
   newGame(): Promise<void> {
-    this.clearSubscriptions();
-
     this.busy(false);
     this.blockUi(false);
 
-    this.rxWaste.push(this.engine.boardSynced.subscribe( () => this.syncPiecesToBlocks() ));
-    this.rxWaste.push(this.engine.stateChanged.subscribe(newState => this.onStateChanged(newState) ));
-
     this.banner = undefined;
-    this.registerDragAndDrop();
 
     this.cdr.markForCheck();
     return Promise.resolve();
@@ -170,8 +238,7 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
    * @returns {number}
    */
   private get ratioX(): number {
-    const e = this.boardElRef.nativeElement;
-    return this.width / (e.clientWidth || e.parentNode.clientWidth);
+    return this.width / this.lastSizeEvent.clientHeight;
   }
   /**
    * Returns the ratio between the current SVG width (Y) to the original width.
@@ -180,8 +247,7 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
    * @returns {number}
    */
   private get ratioY(): number {
-    const e = this.boardElRef.nativeElement;
-    return this.height / (e.clientHeight || e.parentNode.clientHeight);
+    return this.height / this.lastSizeEvent.clientWidth
   }
 
   private registerDragAndDrop() {
@@ -220,6 +286,7 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
       return mousemove.map((mm: MouseEvent) => {
         mm.preventDefault();
 
+
         let newScale = svgElement.currentScale,
           translation = svgElement.currentTranslate,
           x = (mm.pageX - translation.x) / newScale,
@@ -245,10 +312,17 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
       if (md.touches.length < 1) return [];
 
       // Accurate piece selection won't do in mobile, we select a piece if it's block was touched.
-      const rect = svgElement.getBoundingClientRect();
-      let   lastX = md.touches[0].pageX - rect.left,
-            lastY = md.touches[0].pageY - rect.top,
-            dropBlockIndex = BaseBlock.pointToIndex(lastX * this.ratioX, lastY * this.ratioY);
+      let { left, top } = svgElement.getBoundingClientRect();
+      left += this.lastSizeEvent.xOffset;
+      top += this.lastSizeEvent.yOffset;
+
+      const getPoint = (touchEvent: TouchEvent) => ({
+        x: touchEvent.touches[0].pageX - left,
+        y: touchEvent.touches[0].pageY - top
+      });
+
+      const lastPoint = getPoint(md);
+      const dropBlockIndex = BaseBlock.pointToIndex(lastPoint.x * this.ratioX, lastPoint.y * this.ratioY);
 
       this.dragPiece = this.pieces.toArray().filter(p => p.piece.block.index === dropBlockIndex)[0];
 
@@ -273,24 +347,21 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
       return touchmove.map((mm: TouchEvent) => {
         mm.preventDefault();
 
-        let x = mm.touches[0].pageX - rect.left,
-            y = mm.touches[0].pageY - rect.top,
-            newScale = svgElement.currentScale,
+        const pnt = getPoint(mm);
+        let  newScale = svgElement.currentScale,
             translation = svgElement.currentTranslate;
 
-        x = (x - translation.x) / newScale;
-        y = (y - translation.y) / newScale;
+        pnt.x = (pnt.x - translation.x) / newScale;
+        pnt.y = (pnt.y - translation.y) / newScale;
 
-        let res =  {
-          x: x - lastX,
-          y: y - lastY
+        const res = {
+          x: (pnt.x - lastPoint.x) * viewPortRatioX,
+          y: (pnt.y - lastPoint.y) * viewPortRatioY
         };
 
-        lastX = mm.touches[0].pageX - rect.left;
-        lastY = mm.touches[0].pageY - rect.top;
+        lastPoint.x = pnt.x;
+        lastPoint.y = pnt.y;
 
-        res.x *= viewPortRatioX;
-        res.y *= viewPortRatioY;
         return res;
       }).takeUntil(touchend); // stop moving when mouse is up
     });
@@ -339,7 +410,21 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
     }
   }
 
-  private dropPiece(mu) {
+  private updateLastSizeEvent(): void {
+    const e = this.boardElRef.nativeElement;
+    this.lastSizeEvent = {
+      height: e.clientHeight,
+      width: e.clientWidth,
+      clientHeight: Math.min((e.clientHeight || e.parentNode.clientHeight), (e.clientWidth || e.parentNode.clientWidth)),
+      clientWidth: Math.min((e.clientWidth || e.parentNode.clientWidth), (e.clientHeight || e.parentNode.clientHeight)),
+      xOffset: e.clientWidth > e.clientHeight ? (e.clientWidth / 2) - (e.clientHeight / 2) : 0,
+      yOffset: e.clientHeight > e.clientWidth ? (e.clientHeight / 2) - (e.clientWidth / 2) : 0
+    };
+  }
+
+  private dropPiece(mu): void {
+    if (this.isDisabled) return;
+
     // TODO: Clicks outside SVG will still yield an even with coordinates relative to the parent
     // of the SVG, this might resolve to a valid block!
     // need to have 2 observables for document and for SVG element and merge them to one. (SVG should preventDefault)
@@ -355,6 +440,13 @@ export class SVGChessBoard extends ChessBoard implements OnDestroy {
     const rect = this.boardElRef.nativeElement.getBoundingClientRect();
     x -= rect.left;
     y -= rect.top;
+
+    // getting the X when preserveAspectRation is xMid and SVG parents have no width so it's auto calculated
+    if (rect.width > rect.height) {
+      x -= (rect.width / 2) - (rect.height / 2);
+    } else {
+      y -= (rect.height / 2) - (rect.width / 2);
+    }
 
     const dropBlockIndex = BaseBlock.pointToIndex(x * this.ratioX, y * this.ratioY);
     const dropBlock = this.blocks.toArray()[dropBlockIndex];

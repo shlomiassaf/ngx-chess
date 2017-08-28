@@ -1,3 +1,4 @@
+import { Observable } from 'rxjs/Observable';
 import { PlayerType, GAME_STATE, PieceColor, PieceType } from '../models/enums';
 import { AIQuery, PlayerSettings } from '../models/config';
 import { ChessMove } from '../models/ChessMove';
@@ -15,6 +16,8 @@ export class ChessBoardController {
    */
   aiProcessing: boolean = false;
 
+  readonly stateChanged: Observable<GAME_STATE>;
+
   get white(): PlayerSettings {
     return this.players[PieceColor.WHITE];
   };
@@ -22,6 +25,10 @@ export class ChessBoardController {
   get black(): PlayerSettings {
     return this.players[PieceColor.BLACK];
   };
+
+  get winner(): PieceColor {
+    return this.engine.winner();
+  }
 
   get currentPlayer(): PlayerSettings {
     return this.players[this.engine.turn()];
@@ -36,7 +43,10 @@ export class ChessBoardController {
   // the enum is the index;
   private players: PlayerSettings[] = [null, new PlayerSettings(), new PlayerSettings()];
 
-  constructor(protected board: ChessBoard, protected engine: ChessEngine) {}
+
+  constructor(protected board: ChessBoard, protected engine: ChessEngine) {
+    this.stateChanged = engine.stateChanged.asObservable();
+  }
 
   /**
    * Let the computer play for a side.
@@ -138,6 +148,19 @@ export class ChessBoardController {
           <any>this.move(this.engine.getPiece(mv.from), this.engine.getBlock(mv.to), mv.promotion));
     } else {
       return Promise.resolve();
+    }
+  }
+
+  isGameOver(state: GAME_STATE): boolean {
+    switch (state) {
+      case GAME_STATE.DRAW:
+      case GAME_STATE.STALEMATE:
+      case GAME_STATE.THREEFOLD_REPETITION:
+      case GAME_STATE.INSUFFICIENT_MATERIAL:
+      case GAME_STATE.CHECKMATE:
+        return true;
+      default:
+        return false;
     }
   }
 

@@ -1,60 +1,71 @@
-<button class="settings-button" md-fab (click)="sidenav.toggle()">
-  <md-icon class="md-24">settings</md-icon>
-</button>
-<md-sidenav-container class="sidenav-layout">
-  <md-sidenav #sidenav mode="side">
-    <div class="settings-container">
-      <div class="config-section">
-        <h3>Black:</h3>
-          <div class="form-row">
-            <md-radio-group [(ngModel)]="black.rawtype" (change)="onPlayerTypeChange($event, black)">
-              <md-radio-button value="HUMAN">Human</md-radio-button>
-              <md-radio-button value="AI">Computer</md-radio-button>
-            </md-radio-group>
-          </div>
-          <div class="form-row">
-            <label>AI Level:</label>
-            <select (change)="onAILevelChange($event, black)">
-              <option *ngFor="let i of aiLevels" [attr.value]="i"
-                      [attr.selected]="black.aiIndex === i">{{i}}</option>
-            </select>
-          </div>
-      </div>
-      <div class="config-section">
-        <h3>White:</h3>
-          <div class="form-row">
-            <md-radio-group [(ngModel)]="white.rawtype" (change)="onPlayerTypeChange($event, white)">
-              <md-radio-button value="HUMAN">Human</md-radio-button>
-              <md-radio-button value="AI">Computer</md-radio-button>
-            </md-radio-group>
-          </div>
-          <div class="form-row">
-            <label>AI Level:</label>
-            <select (change)="onAILevelChange($event, white)">
-              <option *ngFor="let i of aiLevels" [attr.value]="i"
-                      [attr.selected]="white.aiIndex === i">{{i}}</option>
-            </select>
-          </div>
-      </div>
-      <div class="config-section">
-        <button md-button color="primary" (click)="onNewGame()">New Game</button>
-        <button md-button color="accent" (click)="onStop()" [disabled]="!board.ctrl.aiProcessing">Stop</button>
-      </div>
-    </div>
-  </md-sidenav>
-  <md-card class="board-container">
-    <br>
-    <chess-board class="svg-chess-board" #board></chess-board>
+<ng-template #playerGui let-ctx>
+  <div>
+    <md-button-toggle-group [(ngModel)]="ctx.rawtype" (change)="onPlayerTypeChange($event.value, ctx)">
+      <md-button-toggle color="primary" value="HUMAN">
+        <md-icon>face</md-icon>
+      </md-button-toggle>
+      <md-button-toggle value="AI">
+        <md-icon>computer</md-icon>
+      </md-button-toggle>
+    </md-button-toggle-group>
+  </div>
+  <div class="ai-select-container">
+    <md-select placeholder="AI Level" (change)="onAILevelChange($event, ctx)" [ngModel]="ctx.aiIndex">
+      <md-option *ngFor="let i of aiLevels" [value]="i">{{i}}</md-option>
+    </md-select>
+  </div>
+</ng-template>
+
+<ng-template #spinner><md-progress-spinner mode="indeterminate"></md-progress-spinner></ng-template>
+
+<div fxLayout="column" fxFill>
+  <div fxFlex="nogrow" fxLayout="row" fxLayoutAlign="center">
     <div class="game-toolbar">
-      <button md-mini-fab (click)="ctrl.undo()" [disabled]="board.ctrl.aiProcessing || !isInit">
+      <button md-mini-fab (click)="onNewGame()"
+              mdTooltip="New Game" mdTooltipPosition="below"
+              [disabled]="board.ctrl.aiProcessing">
+        <md-icon class="md-24">play_arrow</md-icon>
+      </button>
+      <button md-mini-fab (click)="ctrl.undo()"
+              mdTooltip="Undo move" mdTooltipPosition="below"
+              [disabled]="board.ctrl.aiProcessing || !isInit">
         <md-icon class="md-24">undo</md-icon>
       </button>
-      <button md-mini-fab (click)="hint()" [disabled]="board.ctrl.aiProcessing || !isInit" *ngIf="board.ctrl.aiSupported">
+      <button md-mini-fab (click)="hint()"
+              mdTooltip="Hint next move" mdTooltipPosition="below"
+              [disabled]="board.ctrl.aiProcessing || !isInit" *ngIf="board.ctrl.aiSupported">
         <md-icon class="md-24">remove_red_eye</md-icon>
       </button>
+      <button md-mini-fab (click)="onStop()"
+              mdTooltip="Stop AI proccessing" mdTooltipPosition="below"
+              [disabled]="!board.ctrl.aiProcessing">
+        <md-icon class="md-24">pan_tool</md-icon>
+      </button>
     </div>
-  </md-card>
-  <div>
-    <p style="text-align: center; margin-top: 0" *ngIf="!workerSupported">Your broswer does not support web workers, expect UI lags while computer thinks</p>
   </div>
-</md-sidenav-container>
+  <div fxFlex="nogrow" *ngIf="board.isPortrait">
+    <div fxLayout="row" fxLayoutAlign="space-between center" [ngStyle]="{'width.px': boardRect.clientWidth, 'margin-left.px': boardRect.xOffset}">
+      <ng-container *ngTemplateOutlet="playerGui; context: {'$implicit': black}"></ng-container>
+    </div>
+  </div>
+  <div fxFlex fxFill style="overflow-y: hidden">
+    <div class="board-container">
+      <chess-board class="svg-chess-board" #board (onBoardResize)="onBoardResize($event)">
+        <div fxFlexFill fxLayout="column" fxLayoutAlign="start end" class="board-content-left">
+          <ng-container *ngTemplateOutlet="playerGui; context: {'$implicit': black}"></ng-container>
+        </div>
+        <div fxFlexFill fxLayout="column-reverse" fxLayoutAlign="start start" class="board-content-right">
+          <ng-container *ngTemplateOutlet="playerGui; context: {'$implicit': white}"></ng-container>
+        </div>
+      </chess-board>
+    </div>
+  </div>
+  <div fxFlex="nogrow" fxLayout="row" fxLayoutAlign="space-between center">
+    <div *ngIf="board.isPortrait" fxLayout="row" fxLayoutAlign="space-between center" [ngStyle]="{'width.px': boardRect.clientWidth, 'margin-left.px': boardRect.xOffset}">
+      <ng-container *ngTemplateOutlet="playerGui; context: {'$implicit': white}"></ng-container>
+    </div>
+  </div>
+  <div style="min-height: 25px;">
+    <p *ngIf="!workerSupported" style="text-align: center; margin-top: 0">Your broswer does not support web workers, expect UI lags while computer thinks</p>
+  </div>
+</div>

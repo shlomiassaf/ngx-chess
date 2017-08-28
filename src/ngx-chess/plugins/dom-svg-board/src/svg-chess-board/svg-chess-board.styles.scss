@@ -5,6 +5,30 @@
   -ms-user-select: none;
   user-select: none;
 }
+
+.xyz {
+  position: relative;
+  display: block;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  overflow-y: hidden;
+  margin: auto;
+  height: 100%;
+}
+
+.chess-board {
+  max-height: 100%;
+  max-width: 100%;
+}
+
+@media (orientation: portrait) {
+  .chess-board {
+    height: 100%;
+  }
+}
+
 .stop-watch-svg circle {
   fill: none;
   stroke: rgba(255, 255, 255, 0.75);

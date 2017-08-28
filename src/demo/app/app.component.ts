@@ -5,20 +5,25 @@ import { AppState } from './app.service';
   selector: 'app',
   template: `
       <main>
-          <md-toolbar color="primary">
-              <span>{{ name }}</span>
-              <span class="fill"></span>
-              <button md-button [routerLink]=" ['./home'] ">
-                  Home
-              </button>
-              <button md-button [routerLink]=" ['./game'] ">
-                  Game
-              </button>
-          </md-toolbar>
+          <div fxLayout="column" fxFill>
+              <div fxFlex="nogrow">
+                  <md-toolbar color="primary">
+                      <span>{{ name }}</span>
+                      <span class="fill"></span>
+                      <button md-button [routerLink]=" ['./home'] ">
+                          Home
+                      </button>
+                      <button md-button [routerLink]=" ['./game'] ">
+                          Game
+                      </button>
+                  </md-toolbar>
 
-          <md-progress-bar mode="indeterminate" color="primary" *ngIf="loading"></md-progress-bar>
-
-          <router-outlet></router-outlet>
+                  <md-progress-bar mode="indeterminate" color="primary" *ngIf="loading"></md-progress-bar>  
+              </div>
+              <div fxFlex>
+                  <router-outlet></router-outlet>
+              </div>
+          </div>
       </main>`
 })
 export class AppComponent {

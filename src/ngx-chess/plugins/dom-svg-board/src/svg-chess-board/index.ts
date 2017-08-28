@@ -1,1 +1,1 @@
-export { BlockDropEvent, PieceDragEvent, SVGChessBoard } from './svg-chess-board.component';
+export { BoardSizeChangeEvent, BlockDropEvent, PieceDragEvent, SVGChessBoard } from './svg-chess-board.component';

@@ -1,5 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 import {
   NgModule,
@@ -27,8 +29,10 @@ import { AppComponent } from './app.component';
 import { AppState, InternalStateType } from './app.service';
 import { HomeComponent } from './home';
 import { GameComponent } from './game';
+import { GameDialogComponent } from './game-dialog/game-dialog.component';
 
 import '../styles/styles.scss';
+
 
 // Application wide providers
 const APP_PROVIDERS = [
@@ -49,16 +53,19 @@ type StoreType = {
   declarations: [
     AppComponent,
     HomeComponent,
-    GameComponent
+    GameComponent,
+    GameDialogComponent
   ],
   /**
    * Import Angular's modules.
    */
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     FormsModule,
     RouterModule.forRoot(ROUTES, { useHash: true, preloadingStrategy: PreloadAllModules }),
     MaterialModule,
+    FlexLayoutModule,
     DomSvgBoardModule
   ],
   /**
@@ -67,7 +74,8 @@ type StoreType = {
   providers: [
     ENV_PROVIDERS,
     APP_PROVIDERS
-  ]
+  ],
+  entryComponents: [ GameDialogComponent ]
 })
 export class AppModule {
 

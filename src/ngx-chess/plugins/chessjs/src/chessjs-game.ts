@@ -157,6 +157,8 @@ export class ChessJSGame extends ChessEngine {
   winner(): PieceColor {
     if (this.state === GAME_STATE.CHECKMATE) {
       return this.turn() === PieceColor.BLACK ? PieceColor.WHITE : PieceColor.BLACK;
+    } else {
+      return PieceColor.UNKNOWN;
     }
   }
 
@@ -253,6 +255,12 @@ export class ChessJSGame extends ChessEngine {
     // empty before, we will handle that.
     this.pieces.splice(this.pieces.length, 0, ...pieces);
     this.boardSynced.emit(null);
+  }
+
+  destroy(): void {
+    super.destroy();
+    this.stateChanged.complete();
+    this.boardSynced.complete();
   }
 
   /**
