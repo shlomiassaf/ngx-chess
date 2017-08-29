@@ -1,6 +1,8 @@
 <ng-template #playerGui let-ctx>
   <div>
-    <md-button-toggle-group [(ngModel)]="ctx.rawtype" (change)="onPlayerTypeChange($event.value, ctx)">
+    <md-button-toggle-group [(ngModel)]="ctx.rawtype"
+                            [vertical]="!board.isPortrait"
+                            (change)="onPlayerTypeChange($event.value, ctx)">
       <md-button-toggle color="primary" value="HUMAN">
         <md-icon>face</md-icon>
       </md-button-toggle>
@@ -51,7 +53,7 @@
   <div fxFlex style="overflow-y: hidden; position: relative">
     <div class="absolute-max">
       <div class="board-container">
-        <chess-board class="svg-chess-board" #board (onBoardResize)="onBoardResize($event)">
+        <chess-board #board (onBoardResize)="onBoardResize($event)" minLandscapeMargin="80">
           <div fxFlexFill fxLayout="column" fxLayoutAlign="start end" class="board-content-left">
             <ng-container *ngTemplateOutlet="playerGui; context: {'$implicit': black}"></ng-container>
           </div>
@@ -69,5 +71,6 @@
   </div>
   <div style="min-height: 25px;">
     <p *ngIf="!workerSupported" style="text-align: center; margin-top: 0">Your broswer does not support web workers, expect UI lags while computer thinks</p>
+    <p *ngIf="isFF" style="text-align: center; margin-top: 0">Not playing well with FireFox, please switch</p>
   </div>
 </div>

@@ -33,6 +33,13 @@ button.active:hover{
   flex: 1;
 }
 
+// workaround, see https://github.com/angular/material2/pull/6684
+game .ai-select-container {
+  .mat-select-trigger {
+    min-width: inherit;
+  }
+}
+
 main {
   display: flex;
   flex-direction: column;

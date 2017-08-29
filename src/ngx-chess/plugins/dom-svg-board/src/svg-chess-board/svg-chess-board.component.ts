@@ -7,6 +7,7 @@ import {
   EventEmitter,
   ViewChild,
   ViewChildren,
+  Input,
   Output,
   Optional,
   QueryList,
@@ -90,6 +91,8 @@ export class SVGChessBoard extends ChessBoard implements AfterViewInit, AfterCon
   /** @internal */
   lastSizeEvent: BoardSizeChangeEvent;
 
+  @Input() minLandscapeMargin: number;
+
   get isPortrait(): boolean {
     return this._isPortrait;
   }
@@ -97,6 +100,7 @@ export class SVGChessBoard extends ChessBoard implements AfterViewInit, AfterCon
   private isDisabled: boolean;
   private rxWaste: Subscription[] = [];
   private onWindowResize: any;
+  private onDocumentTouchMove: (event: TouchEvent) => any;
   private _isPortrait: boolean;
 
   @ViewChild('board') private boardElRef: ElementRef;
@@ -114,11 +118,28 @@ export class SVGChessBoard extends ChessBoard implements AfterViewInit, AfterCon
     Object.defineProperty(this, 'viewBox', {value: `0 0 ${this.width} ${this.height}`});
     this.blockSize = this.height / engine.rowCount;
 
+    if (document) {
+      // prevent scrolling when interacting with board.
+      this.onDocumentTouchMove = (event: TouchEvent): any => {
+        if ( (event.target as any).ownerSVGElement === this.boardElRef.nativeElement) {
+          event.preventDefault();
+        }
+        return;
+      };
+      document.addEventListener('touchmove', this.onDocumentTouchMove, <any>{ passive: false } );
+    }
+
     if (window) {
       this.onWindowResize = (event$: any) => {
         const oldIsPortrait = this._isPortrait;
-        this._isPortrait = window.innerHeight > window.innerWidth;
         this.updateLastSizeEvent();
+        this._isPortrait = window.innerHeight > window.innerWidth;
+
+        // this._isPortrait = this.lastSizeEvent.yOffset > 0;
+        // if (!this._isPortrait && this.minLandscapeMargin && this.minLandscapeMargin > 0 && this.minLandscapeMargin > this.lastSizeEvent.xOffset) {
+        //   this._isPortrait = false;
+        // }
+
         this.onBoardResize.emit(this.lastSizeEvent);
 
         // on mobile, moving to landscape from portrait require another calc/redraw
@@ -189,6 +210,9 @@ export class SVGChessBoard extends ChessBoard implements AfterViewInit, AfterCon
 
   ngOnDestroy() {
    this.clearSubscriptions();
+   if (this.onDocumentTouchMove) {
+     document.removeEventListener("touchmove", this.onDocumentTouchMove);
+   }
    if (this.onWindowResize) {
      window.removeEventListener("resize", this.onWindowResize);
    }
@@ -253,11 +277,11 @@ export class SVGChessBoard extends ChessBoard implements AfterViewInit, AfterCon
   private registerDragAndDrop() {
     let svgElement: SVGSVGElement = this.boardElRef.nativeElement;
 
-    let mousedown = Observable.fromEvent(svgElement, 'mousedown');
-    let touchstart = Observable.fromEvent(svgElement, 'touchstart');
+    let mousedown = Observable.fromEvent(svgElement, 'mousedown', { passive: false });
+    let touchstart = Observable.fromEvent(svgElement, 'touchstart', { passive: false });
 
-    let mousemove = Observable.fromEvent(svgElement, 'mousemove');
-    let touchmove = Observable.fromEvent(svgElement, 'touchmove');
+    let mousemove = Observable.fromEvent(svgElement, 'mousemove', { passive: false });
+    let touchmove = Observable.fromEvent(svgElement, 'touchmove', { passive: false });
     // TODO: maybe catch mouseup on root component, get root via appRef boot event.
     let mouseup   = Observable.fromEvent(document, 'mouseup'); // catch drops everywhere
     let touchend   = Observable.fromEvent(document, 'touchend'); // catch drops everywhere
@@ -308,6 +332,7 @@ export class SVGChessBoard extends ChessBoard implements AfterViewInit, AfterCon
     });
 
     let touchdrag = touchstart.mergeMap((md: TouchEvent) => {
+      this.updateLastSizeEvent();
       if (this.isDisabled) return []; // only track when piece is clicked, nothing else.
       if (md.touches.length < 1) return [];
 
@@ -330,7 +355,6 @@ export class SVGChessBoard extends ChessBoard implements AfterViewInit, AfterCon
 
       // only drag when it's the piece turn.
       if (this.dragPiece.piece.color !== this.engine.turn()) return [];
-
 
       // since SVG is responsive 1 mouse px != 1 svg px
       // we get SVG px and we need a conversion ratio, from SVG to mouse px:
@@ -481,6 +505,7 @@ export class SVGChessBoard extends ChessBoard implements AfterViewInit, AfterCon
         });
     }
     else {
+      this.dragPiece.reset(150);
       this.endDragAndDrop();
     }
   }

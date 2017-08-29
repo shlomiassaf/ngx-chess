@@ -1,5 +1,6 @@
 {
  "name": "App",
+ "display": "fullscreen",
  "icons": [
   {
    "src": "/assets/icon/android-icon-36x36.png",

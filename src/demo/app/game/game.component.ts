@@ -55,6 +55,8 @@ export class GameComponent implements AfterViewInit, OnDestroy {
 
   boardRect: BoardSizeChangeEvent = { height: 0, width: 0, clientHeight: 0, clientWidth: 0, xOffset: 0, yOffset: 0};
 
+  isFF = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
   constructor(private dialog: MdDialog) {}
 
   ngAfterViewInit() {

@@ -8,11 +8,8 @@ import { AppState } from './app.service';
           <div fxLayout="column" fxFill>
               <div fxFlex="nogrow">
                   <md-toolbar color="primary">
-                      <span>{{ name }}</span>
+                      <a md-button [routerLink]=" ['./home'] ">{{ name }}</a>
                       <span class="fill"></span>
-                      <button md-button [routerLink]=" ['./home'] ">
-                          Home
-                      </button>
                       <button md-button [routerLink]=" ['./game'] ">
                           Game
                       </button>

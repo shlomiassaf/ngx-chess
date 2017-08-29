@@ -1,6 +1,7 @@
-<div class="xyz svg-chess-board">
+<div class="svg-chess-board no-user-select">
   <svg [attr.viewBox]="viewBox"
        class="chess-board"
+       [class.portrait]="isPortrait"
        preserveAspectRatio="xMidYMid meet" #board>
 
     <!-- Drop shadow for a piece -->
