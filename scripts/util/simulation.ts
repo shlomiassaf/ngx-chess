@@ -1,5 +1,4 @@
 import * as Path from 'path';
-import * as del from 'del';
 import * as tsConfigLoader from 'tsconfig';
 import { CompilerOptions, MapLike } from 'typescript';
 import { Configuration, NewModule, NewResolve, Rule, Plugin } from 'webpack';

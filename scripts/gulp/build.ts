@@ -3,10 +3,13 @@ import * as Path from 'path';
 import { execSync as spawn } from 'child_process';
 import * as webpack from 'webpack';
 import * as jsonfile from 'jsonfile';
+import * as del from 'del';
+
 import { ScriptTarget, ModuleKind } from 'typescript';
 
 import * as util from '../util';
 
+const mv = require('mv');
 const rollup = require('rollup-stream');
 const source = require('vinyl-source-stream');
 const buffer = require('vinyl-buffer');
@@ -37,10 +40,11 @@ export class Gulpfile {
         see task "build:fesm:es5" (and the commented code) for more details.1
      */
 
+
     return new Promise( (resolve, reject) => webpack(config).run((err, stats) => err ? reject(err) : resolve(stats)) )
       .then( () => {
         const p = util.root(util.currentPackage().tsConfigObj.compilerOptions.outDir);
-        spawn(`rm -rf ${p}`);
+        del.sync(p);
 
         const tsConfig = jsonfile.readFileSync(util.root(util.FS_REF.TS_CONFIG_TMP));
         tsConfig.compilerOptions.target = 'es5';
@@ -58,23 +62,30 @@ export class Gulpfile {
         }
 
 
-        spawn(`mv ${copyInst.from} ${copyInst.toSrc}`);
-        spawn(`rm -rf ${p}`);
+        return new Promise( (resolve, reject) => {
+          mv(copyInst.from, copyInst.toSrc, {mkdirp: true}, (err?) => {
+            if (err) {
+              reject(err);
+            } else {
+             resolve(del(p));
+            }
+          });
+        })
+          .then( () => {
+            /*
+             Angular compiler with 'flatModuleOutFile' turned on creates an entry JS file with a matching d.ts
+             file and an aggregated metadata.json file.
 
+             This is done by creating a corresponding TS file (to the output JS file).
+             The side-effect is a source map reference to the TS file.
 
-        /*
-         Angular compiler with 'flatModuleOutFile' turned on creates an entry JS file with a matching d.ts
-         file and an aggregated metadata.json file.
-
-         This is done by creating a corresponding TS file (to the output JS file).
-         The side-effect is a source map reference to the TS file.
-
-         Since the TS is virtual and does not exists we need to remove the comment so the source maps
-         will not break.
-         */
-        const flatModuleJsPath = Path.join(copyInst.toSrc, `${util.getMainOutputFileName(util.currentPackage())}.js`);
-        const withoutComments = convert.removeComments(fs.readFileSync(flatModuleJsPath, 'utf-8'));
-        fs.writeFileSync(flatModuleJsPath, withoutComments, 'utf-8');
+             Since the TS is virtual and does not exists we need to remove the comment so the source maps
+             will not break.
+             */
+            const flatModuleJsPath = Path.join(copyInst.toSrc, `${util.getMainOutputFileName(util.currentPackage())}.js`);
+            const withoutComments = convert.removeComments(fs.readFileSync(flatModuleJsPath, 'utf-8'));
+            fs.writeFileSync(flatModuleJsPath, withoutComments, 'utf-8');
+          });
       });
   }
 
